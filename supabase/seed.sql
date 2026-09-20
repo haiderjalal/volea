@@ -79,3 +79,9 @@ join (values
   ('askari-padel-courts',  'Court 3', false)
 ) as v(slug, name, indoor) on v.slug = c.slug
 on conflict (club_id, name) do nothing;
+
+-- Report what actually landed. A seed that quietly inserts nothing looks
+-- identical to a seed that was never run, and the app just says "no clubs".
+select
+  (select count(*) from public.clubs)  as clubs,
+  (select count(*) from public.courts) as courts;

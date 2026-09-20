@@ -1,8 +1,9 @@
 -- Volea — patch for a database seeded before 2026-09-20 (Dubai demo data).
--- Paste this whole file into the Supabase SQL Editor and run it once.
+-- Paste into the Supabase SQL Editor and run once.
 --
--- Composition: supabase/migrations/0003_relocate_seed_to_pakistan.sql + supabase/seed.sql
--- A fresh database does not need this - use supabase/setup.sql instead.
+-- Composition: migrations/0003_relocate_seed_to_pakistan.sql + seed.sql
+-- NOT atomic - if it errors, read the error before re-running.
+-- A fresh database should use supabase/setup.sql instead.
 
 -- ============================ relocate ============================
 
@@ -33,16 +34,22 @@ where slug in (
 
 -- Re-assert the realtime publication. It is the one piece of setup that cannot
 -- be checked over the REST API, so make it self-healing rather than assumed.
+--
+-- Catches everything, not just duplicate_object: realtime is an enhancement,
+-- and a publication that cannot be altered (ownership, a renamed publication)
+-- must never abort the migration carrying the data changes.
 do $realtime$
 begin
   alter publication supabase_realtime add table public.queue_entries;
-exception when duplicate_object then null;
+exception when others then
+  raise notice 'realtime: queue_entries not added (%)', sqlerrm;
 end $realtime$;
 
 do $realtime$
 begin
   alter publication supabase_realtime add table public.matches;
-exception when duplicate_object then null;
+exception when others then
+  raise notice 'realtime: matches not added (%)', sqlerrm;
 end $realtime$;
 
 -- ============================ new demo clubs ============================
@@ -128,3 +135,9 @@ join (values
   ('askari-padel-courts',  'Court 3', false)
 ) as v(slug, name, indoor) on v.slug = c.slug
 on conflict (club_id, name) do nothing;
+
+-- Report what actually landed. A seed that quietly inserts nothing looks
+-- identical to a seed that was never run, and the app just says "no clubs".
+select
+  (select count(*) from public.clubs)  as clubs,
+  (select count(*) from public.courts) as courts;
