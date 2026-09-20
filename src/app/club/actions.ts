@@ -164,7 +164,7 @@ export async function createTournament(
     mode: v.mode,
     size: v.size,
     entry_fee_cents: Math.round(v.entry_fee * 100),
-    currency: (club?.currency as string) ?? "AED",
+    currency: (club?.currency as string) ?? "PKR",
     starts_at: new Date(v.starts_at).toISOString(),
     registration_closes_at: new Date(v.registration_closes_at).toISOString(),
     status: "open",

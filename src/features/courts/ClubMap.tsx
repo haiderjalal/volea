@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { Map as LeafletMap, Marker } from "leaflet";
+import { priceBadge } from "@/lib/format";
 import type { Club } from "@/lib/types";
 
 interface Props {
@@ -54,11 +55,9 @@ export function ClubMap({ clubs, selectedId, onSelect, me, className }: Props) {
       const pin = (club: Club) =>
         L.divIcon({
           className: "",
-          html: `<span class="flex h-9 w-9 -translate-x-1/2 -translate-y-full items-center justify-center rounded-full border-2 border-court-950 bg-teal-500 text-[11px] font-bold text-court-950 shadow-lg">${
-            club.price_per_hour_cents > 0
-              ? Math.round(club.price_per_hour_cents / 100)
-              : "•"
-          }</span>`,
+          html: `<span class="flex h-9 w-9 -translate-x-1/2 -translate-y-full items-center justify-center rounded-full border-2 border-court-950 bg-teal-500 text-[11px] font-bold text-court-950 shadow-lg">${priceBadge(
+            club.price_per_hour_cents,
+          )}</span>`,
           iconSize: [36, 36],
         });
 

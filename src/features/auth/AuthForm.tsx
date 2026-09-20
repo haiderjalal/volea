@@ -37,7 +37,7 @@ export function AuthForm({ mode, next }: { mode: "signin" | "signup"; next?: str
             />
           </Field>
           <Field label="City" hint="Volea matches players within the same city.">
-            <Input name="city" autoComplete="address-level2" required placeholder="Dubai" />
+            <Input name="city" autoComplete="address-level2" required placeholder="Islamabad" />
           </Field>
         </>
       ) : null}

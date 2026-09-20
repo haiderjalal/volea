@@ -16,14 +16,16 @@ function Submit() {
 }
 
 const TIMEZONES = [
-  "Asia/Dubai",
   "Asia/Karachi",
+  "Asia/Dubai",
   "Asia/Riyadh",
   "Europe/London",
   "Europe/Madrid",
   "America/New_York",
   "UTC",
 ];
+
+const CURRENCIES = ["PKR", "AED", "USD", "EUR", "GBP", "SAR"];
 
 export function ClubForm() {
   const [state, formAction] = useActionState<ClubState, FormData>(registerClub, {});
@@ -53,7 +55,7 @@ export function ClubForm() {
     <Card className="p-5">
       <form action={formAction} className="space-y-4">
         <Field label="Club name">
-          <Input name="name" required maxLength={80} placeholder="Dune Padel Club" />
+          <Input name="name" required maxLength={80} placeholder="Margalla Padel Club" />
         </Field>
 
         <Field label="Description" hint="Optional. One or two lines players will read.">
@@ -61,15 +63,15 @@ export function ClubForm() {
         </Field>
 
         <Field label="Street address">
-          <Input name="address" maxLength={160} placeholder="Al Quoz Industrial 3" />
+          <Input name="address" maxLength={160} placeholder="F-7 Markaz" />
         </Field>
 
         <div className="grid grid-cols-2 gap-3">
           <Field label="City">
-            <Input name="city" required placeholder="Dubai" />
+            <Input name="city" required placeholder="Islamabad" />
           </Field>
           <Field label="Country">
-            <Input name="country" placeholder="AE" maxLength={60} />
+            <Input name="country" placeholder="PK" maxLength={60} />
           </Field>
         </div>
 
@@ -122,7 +124,7 @@ export function ClubForm() {
         </fieldset>
 
         <Field label="Time zone" hint="Match times are shown to players in this zone.">
-          <Select name="timezone" defaultValue="Asia/Dubai">
+          <Select name="timezone" defaultValue="Asia/Karachi">
             {TIMEZONES.map((tz) => (
               <option key={tz} value={tz}>
                 {tz}
@@ -142,11 +144,11 @@ export function ClubForm() {
 
         <div className="grid grid-cols-3 gap-3">
           <Field label="Price/hour">
-            <Input type="number" name="price_per_hour" min={0} step="1" required defaultValue={150} />
+            <Input type="number" name="price_per_hour" min={0} step="100" required defaultValue={7500} />
           </Field>
           <Field label="Currency">
-            <Select name="currency" defaultValue="AED">
-              {["AED", "USD", "EUR", "GBP", "PKR", "SAR"].map((c) => (
+            <Select name="currency" defaultValue="PKR">
+              {CURRENCIES.map((c) => (
                 <option key={c} value={c}>
                   {c}
                 </option>
@@ -159,7 +161,7 @@ export function ClubForm() {
         </div>
 
         <Field label="Phone" hint="Optional. Shown on your public page.">
-          <Input name="phone" maxLength={30} placeholder="+971 4 000 0000" />
+          <Input name="phone" maxLength={30} placeholder="+92 51 000 0000" />
         </Field>
 
         {state.error ? (

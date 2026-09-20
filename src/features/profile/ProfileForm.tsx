@@ -41,7 +41,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
             <Input name="city" required defaultValue={profile.city ?? ""} />
           </Field>
           <Field label="Country">
-            <Input name="country" defaultValue={profile.country ?? ""} placeholder="AE" />
+            <Input name="country" defaultValue={profile.country ?? ""} placeholder="PK" />
           </Field>
         </div>
 

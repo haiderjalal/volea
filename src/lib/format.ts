@@ -6,12 +6,25 @@ export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
 }
 
-export function formatMoney(cents: number, currency = "AED"): string {
-  return new Intl.NumberFormat("en-AE", {
+export function formatMoney(cents: number, currency = "PKR"): string {
+  return new Intl.NumberFormat("en-PK", {
     style: "currency",
     currency,
     maximumFractionDigits: 0,
   }).format(cents / 100);
+}
+
+/**
+ * Hourly price squeezed into a map pin: 6000 -> "6k", 8500 -> "8.5k".
+ * PKR rates run to five digits, which will not fit where a two-digit
+ * euro price did.
+ */
+export function priceBadge(cents: number): string {
+  if (cents <= 0) return "•";
+  const units = cents / 100;
+  if (units < 1000) return String(Math.round(units));
+  const thousands = units / 1000;
+  return `${thousands % 1 === 0 ? thousands : thousands.toFixed(1)}k`;
 }
 
 /** `"20:30:00"` → `"8:30 PM"`. */
@@ -22,7 +35,7 @@ export function formatClock(time: string): string {
   return `${hour}:${String(m).padStart(2, "0")} ${suffix}`;
 }
 
-export function formatSlot(startsAt: string, timeZone = "Asia/Dubai"): string {
+export function formatSlot(startsAt: string, timeZone = "Asia/Karachi"): string {
   return new Intl.DateTimeFormat("en-GB", {
     weekday: "short",
     day: "numeric",

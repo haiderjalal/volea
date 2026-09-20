@@ -21,14 +21,14 @@ declare
     array['20:30'::time, '23:00'::time]
   ];
 begin
-  -- four players, all in Dubai
+  -- four players, all in Islamabad
   for i in 1..4 loop
     insert into auth.users (id, instance_id, aud, role, email, encrypted_password,
                             email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
                             created_at, updated_at)
     values (v_ids[i], '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
             'p' || i || '@volea.test', '', now(), '{"provider":"email"}'::jsonb,
-            jsonb_build_object('username', 'tester' || i, 'full_name', 'Tester ' || i, 'city', 'Dubai'),
+            jsonb_build_object('username', 'tester' || i, 'full_name', 'Tester ' || i, 'city', 'Islamabad'),
             now(), now());
   end loop;
 
@@ -50,9 +50,9 @@ begin
 
   select * into v_match from public.matches where id = v_entry.match_id;
 
-  -- the shared window is 20:30-22:00, so the slot must start at 20:30 Dubai time
-  if (v_match.starts_at at time zone 'Asia/Dubai')::time <> '20:30'::time then
-    raise exception 'FAIL: slot started at %, expected 20:30', (v_match.starts_at at time zone 'Asia/Dubai')::time;
+  -- the shared window is 20:30-22:00, so the slot must start at 20:30 Pakistan time
+  if (v_match.starts_at at time zone 'Asia/Karachi')::time <> '20:30'::time then
+    raise exception 'FAIL: slot started at %, expected 20:30', (v_match.starts_at at time zone 'Asia/Karachi')::time;
   end if;
   if v_match.ends_at - v_match.starts_at <> interval '90 minutes' then
     raise exception 'FAIL: slot was % long, expected 90 minutes', v_match.ends_at - v_match.starts_at;

@@ -71,7 +71,7 @@ export function MatchCard({
   const team1 = players.filter((p) => p.team === 1);
   const team2 = players.filter((p) => p.team === 2);
   const done = match.status === "completed";
-  const tz = match.club?.timezone ?? "Asia/Dubai";
+  const tz = match.club?.timezone ?? "Asia/Karachi";
 
   return (
     <Card className="p-4">
