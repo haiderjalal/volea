@@ -82,17 +82,23 @@ RLS is enabled on every table.
 - `matches` and `match_players` have **no write policy at all** — the only path in
   is through the definer functions.
 
-The signup trigger on `auth.users` is wrapped in an exception handler. This
-Supabase project is shared with another application, and a failure to create a
-Volea profile must never block somebody else's signup.
+The signup trigger on `auth.users` is wrapped in an exception handler: a profile
+row that fails to materialise must never block the signup itself. A user without
+a profile can be repaired; a user who could not sign up is gone.
 
-## Schema isolation
+## Schema
 
-Everything lives in `volea`, not `public`. The project already hosts an unrelated
-application; a separate schema means no name collisions, no accidental writes, and
-a clean lift into a dedicated project later (dump `volea`, restore, repoint).
+Everything lives in `public`, on a Supabase project dedicated to Volea.
 
-Cost: the schema must be listed under Project Settings → API → Exposed schemas.
+This started life in an isolated `volea` schema, because the first project was
+shared with an unrelated application. Once Volea got its own project that
+isolation bought nothing and cost a permanent footgun: a non-default schema is
+invisible to PostgREST until somebody ticks **Exposed schemas**, and it quietly
+breaks `supabase gen types`, the dashboard table editor and every tutorial a new
+contributor will follow. `public` is the convention; the convention wins.
+
+Moving back was cheap precisely because no application code names a schema —
+`.from("clubs")` is schema-agnostic, so only the client construction changed.
 
 ## Money
 
@@ -113,7 +119,6 @@ dance.
 
 ## Realtime
 
-`volea.queue_entries` and `volea.matches` are in the `supabase_realtime`
-publication. The waiting room subscribes to its own row and refreshes the instant
+`queue_entries` and `matches` are in the `supabase_realtime` publication. The waiting room subscribes to its own row and refreshes the instant
 the matcher claims it. A 20-second poll sits behind it, because mobile sockets
 drop and a stuck waiting screen is the one failure players will not forgive.

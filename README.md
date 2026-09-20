@@ -51,29 +51,34 @@ npm run dev
 
 ### Database
 
-Everything lives in an isolated `volea` schema so it can share a Supabase project
-without touching anything else in `public`.
+**Fastest path:** paste [`supabase/setup.sql`](supabase/setup.sql) into the
+Supabase SQL Editor and run it once. The editor runs it as a single transaction,
+so it either fully succeeds or leaves the database untouched — and the last block
+drives four players through queue → match → court → result → rating and raises if
+anything is wrong. A clean run is a verified install.
+
+The bundle is generated, never hand-edited:
 
 ```bash
-# apply in order
-supabase/migrations/0001_init.sql     # schema, tables, indexes
-supabase/migrations/0002_engine.sql   # matchmaker, Elo, brackets, analytics, RLS
-supabase/seed.sql                     # demo clubs and courts (optional)
+npm run db:bundle     # migrations/ + seed.sql + tests/ -> setup.sql
 ```
 
-> **Required once:** Supabase Dashboard → Project Settings → API →
-> **Exposed schemas** → add `volea`. Without it every query returns
-> `PGRST106 Invalid schema`.
+Sources, which are what you edit:
 
-### Verify the matchmaker
+```
+supabase/migrations/0001_init.sql     # tables, types, indexes
+supabase/migrations/0002_engine.sql   # matchmaker, Elo, brackets, analytics, RLS
+supabase/seed.sql                     # demo clubs and courts
+supabase/tests/matchmaking.test.sql   # the self-check
+```
+
+Everything lives in `public`. Run the self-check any time against a dev database:
 
 ```bash
 psql "$DATABASE_URL" -f supabase/tests/matchmaking.test.sql
 ```
 
-Drives four players through queue → match → court → result → rating and asserts
-each step, then cleans up after itself. It raises on failure, so a silent run is
-a pass.
+It raises on failure and cleans up after itself, so a silent run is a pass.
 
 ---
 
