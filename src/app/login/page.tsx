@@ -15,10 +15,10 @@ export default async function LoginPage({
 
   return (
     <div className="mx-auto max-w-sm py-8">
-      <h1 className="text-2xl font-extrabold tracking-tight text-chalk-100">
+      <h1 className="font-display text-4xl font-light text-bone-100">
         Welcome back
       </h1>
-      <p className="mt-1.5 text-sm text-chalk-500">
+      <p className="mt-1.5 text-sm text-bone-500">
         Sign in to join the queue and see your matches.
       </p>
 
@@ -32,9 +32,9 @@ export default async function LoginPage({
         <AuthForm mode="signin" next={next} />
       </div>
 
-      <p className="mt-6 text-center text-sm text-chalk-500">
+      <p className="mt-6 text-center text-sm text-bone-500">
         New to Volea?{" "}
-        <Link href="/signup" className="font-semibold text-ball-400 hover:underline">
+        <Link href="/signup" className="font-semibold text-gold-300 hover:underline">
           Create a profile
         </Link>
       </p>

@@ -31,7 +31,7 @@ function TeamSlot({
       )}
     >
       {team?.seed ? (
-        <span className="w-4 shrink-0 text-[10px] font-bold text-chalk-600 tabular-nums">
+        <span className="w-4 shrink-0 text-[10px] font-bold text-bone-600 tabular-nums">
           {team.seed}
         </span>
       ) : (
@@ -40,13 +40,13 @@ function TeamSlot({
       <span
         className={cn(
           "min-w-0 flex-1 truncate text-sm",
-          team ? "text-chalk-200" : "text-chalk-600 italic",
-          isWinner && "font-semibold text-ball-400",
+          team ? "text-bone-200" : "text-bone-600 italic",
+          isWinner && "font-semibold text-gold-300",
         )}
       >
         {team?.name ?? "To be decided"}
       </span>
-      {isWinner ? <Trophy size={13} className="shrink-0 text-ball-400" aria-label="Winner" /> : null}
+      {isWinner ? <Trophy size={13} className="shrink-0 text-gold-300" aria-label="Winner" /> : null}
       {onAdvance}
     </div>
   );
@@ -72,7 +72,7 @@ export function Bracket({
       <div className="flex min-w-max gap-4">
         {rounds.map((round) => (
           <section key={round} className="w-60 shrink-0">
-            <h3 className="mb-2 text-xs font-semibold tracking-wide text-chalk-500 uppercase">
+            <h3 className="mb-2 text-xs font-semibold tracking-wide text-bone-500 uppercase">
               {roundName(round, total)}
             </h3>
             <ul className="space-y-3">
@@ -84,7 +84,7 @@ export function Bracket({
                   const bothPresent = Boolean(m.team1_id && m.team2_id);
                   return (
                     <li key={m.id}>
-                      <Card className="divide-y divide-court-700/60 p-0">
+                      <Card className="divide-y divide-ink-700/60 p-0">
                         {[m.team1_id, m.team2_id].map((teamId, i) => (
                           <TeamSlot
                             key={i}
@@ -124,12 +124,12 @@ export function Bracket({
 
 export function ChampionBanner({ team }: { team: TournamentTeam }) {
   return (
-    <Card className="border-ball-500/40 bg-ball-500/5 p-5 text-center">
-      <Trophy size={26} className="mx-auto text-ball-400" aria-hidden="true" />
-      <p className="mt-2 text-xs font-semibold tracking-wide text-chalk-500 uppercase">
+    <Card className="border-gold-500/40 bg-gold-500/5 p-5 text-center">
+      <Trophy size={26} className="mx-auto text-gold-300" aria-hidden="true" />
+      <p className="mt-2 text-xs font-semibold tracking-wide text-bone-500 uppercase">
         Champions
       </p>
-      <p className="mt-1 text-lg font-extrabold text-chalk-100">{team.name}</p>
+      <p className="mt-2 font-display text-2xl font-light text-bone-100">{team.name}</p>
       <div className="mt-2 flex items-center justify-center gap-2">
         {team.player1 ? <Badge>{team.player1.full_name}</Badge> : null}
         {team.player2 ? <Badge>{team.player2.full_name}</Badge> : null}

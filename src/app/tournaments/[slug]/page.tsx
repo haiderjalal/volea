@@ -100,29 +100,29 @@ export default async function TournamentPage({
       <header>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-chalk-100">
+            <h1 className="font-display text-4xl font-light text-bone-100">
               {tournament.name}
             </h1>
             {tournament.club ? (
               <Link
                 href={`/clubs/${tournament.club.slug}`}
-                className="mt-1 inline-flex items-center gap-1.5 text-sm text-chalk-500 hover:text-teal-400"
+                className="mt-1 inline-flex items-center gap-1.5 text-sm text-bone-500 hover:text-court-400"
               >
                 <MapPin size={13} aria-hidden="true" />
                 {tournament.club.name} · {tournament.club.city}
               </Link>
             ) : null}
           </div>
-          <Badge tone="teal" className="capitalize">
+          <Badge tone="court" className="capitalize">
             {tournament.status}
           </Badge>
         </div>
 
         {tournament.description ? (
-          <p className="mt-3 text-sm text-chalk-400">{tournament.description}</p>
+          <p className="mt-3 text-sm text-bone-400">{tournament.description}</p>
         ) : null}
 
-        <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-chalk-500">
+        <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-bone-500">
           <div className="flex items-center gap-1.5">
             <CalendarDays size={14} aria-hidden="true" />
             <dt className="sr-only">Starts</dt>
@@ -137,7 +137,7 @@ export default async function TournamentPage({
           </div>
           <div>
             <dt className="sr-only">Entry fee</dt>
-            <dd className="font-semibold text-ball-400">
+            <dd className="font-semibold text-gold-300">
               {tournament.entry_fee_cents > 0
                 ? `${formatMoney(tournament.entry_fee_cents, tournament.currency)} per team`
                 : "Free entry"}
@@ -151,16 +151,16 @@ export default async function TournamentPage({
       {canEnter ? (
         <JoinTournament tournamentId={tournament.id} mode={tournament.mode} />
       ) : myTeam ? (
-        <Card className="border-teal-500/40 bg-teal-500/5 p-4">
-          <p className="text-sm text-chalk-300">
-            You are entered as <strong className="text-teal-400">{myTeam.name}</strong>
+        <Card className="border-court-500/40 bg-court-500/5 p-4">
+          <p className="text-sm text-bone-300">
+            You are entered as <strong className="text-court-400">{myTeam.name}</strong>
             {myTeam.seed ? ` · seed ${myTeam.seed}` : ""}.
           </p>
         </Card>
       ) : !userId ? (
         <Card className="p-4">
-          <p className="text-sm text-chalk-400">
-            <Link href="/login" className="font-semibold text-ball-400 hover:underline">
+          <p className="text-sm text-bone-400">
+            <Link href="/login" className="font-semibold text-gold-300 hover:underline">
               Sign in
             </Link>{" "}
             to enter this tournament.
@@ -170,7 +170,7 @@ export default async function TournamentPage({
 
       {isHost && matches.length === 0 && allTeams.length >= 2 ? (
         <Card className="p-4">
-          <p className="text-sm text-chalk-400">
+          <p className="text-sm text-bone-400">
             {allTeams.length} teams entered. Drawing the bracket seeds them by level and
             closes registration.
           </p>
@@ -202,20 +202,20 @@ export default async function TournamentPage({
         {allTeams.length === 0 ? (
           <EmptyState title="No teams yet" body="Be the first pair to enter." />
         ) : (
-          <Card className="divide-y divide-court-700/60 p-0">
+          <Card className="divide-y divide-ink-700/60 p-0">
             <ul>
               {allTeams.map((team) => (
                 <li key={team.id} className="flex items-center gap-3 px-4 py-3">
                   {team.seed ? (
-                    <span className="w-5 shrink-0 text-center text-xs font-bold text-chalk-600 tabular-nums">
+                    <span className="w-5 shrink-0 text-center text-xs font-bold text-bone-600 tabular-nums">
                       {team.seed}
                     </span>
                   ) : null}
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold text-chalk-100">
+                    <span className="block truncate text-sm font-semibold text-bone-100">
                       {team.name}
                     </span>
-                    <span className="block truncate text-xs text-chalk-600">
+                    <span className="block truncate text-xs text-bone-600">
                       {[team.player1?.full_name, team.player2?.full_name]
                         .filter(Boolean)
                         .join(" & ")}
@@ -228,7 +228,7 @@ export default async function TournamentPage({
                         name={p!.full_name}
                         src={p!.avatar_url}
                         size={28}
-                        className="ring-2 ring-court-850"
+                        className="ring-2 ring-ink-850"
                       />
                     ))}
                   </span>

@@ -65,46 +65,46 @@ export function WaitingRoom({
     <Card className="overflow-hidden">
       <div className="flex flex-col items-center px-6 py-10 text-center">
         <span className="relative flex h-16 w-16 items-center justify-center">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal-500/25" />
-          <span className="relative inline-flex h-16 w-16 items-center justify-center rounded-full bg-teal-500/15 text-teal-400">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-court-500/25" />
+          <span className="relative inline-flex h-16 w-16 items-center justify-center rounded-full bg-court-500/15 text-court-400">
             <Radar size={28} aria-hidden="true" />
           </span>
         </span>
 
-        <h2 className="mt-5 text-lg font-bold text-chalk-100">Looking for your game</h2>
-        <p className="mt-1.5 max-w-xs text-sm text-chalk-500">
+        <h2 className="mt-6 font-display text-3xl font-light text-bone-100">Looking for your game</h2>
+        <p className="mt-1.5 max-w-xs text-sm text-bone-500">
           We need {needed} more player{needed === 1 ? "" : "s"} free between{" "}
           {formatClock(entry.window_start)} and {formatClock(entry.window_end)}.
         </p>
 
-        <p aria-live="polite" className="mt-4 text-xs text-chalk-600 tabular-nums">
+        <p aria-live="polite" className="mt-4 text-xs text-bone-600 tabular-nums">
           Searching for {mins > 0 ? `${mins}m ` : ""}
           {elapsed % 60}s
         </p>
 
         <dl className="mt-6 grid w-full max-w-xs grid-cols-2 gap-2 text-left">
-          <div className="rounded-xl bg-court-900 p-3">
-            <dt className="text-xs text-chalk-600">Day</dt>
-            <dd className="mt-0.5 text-sm font-medium text-chalk-200">
+          <div className="rounded-xl bg-ink-900 p-3">
+            <dt className="text-xs text-bone-600">Day</dt>
+            <dd className="mt-0.5 text-sm font-medium text-bone-200">
               {formatDay(entry.play_date)}
             </dd>
           </div>
-          <div className="rounded-xl bg-court-900 p-3">
-            <dt className="text-xs text-chalk-600">Court</dt>
-            <dd className="mt-0.5 text-sm font-medium text-chalk-200">
+          <div className="rounded-xl bg-ink-900 p-3">
+            <dt className="text-xs text-bone-600">Court</dt>
+            <dd className="mt-0.5 text-sm font-medium text-bone-200">
               {clubName ?? "Any near you"}
             </dd>
           </div>
         </dl>
 
         {othersWaiting > 1 ? (
-          <Badge tone="teal" className="mt-4">
+          <Badge tone="court" className="mt-4">
             <Users size={12} aria-hidden="true" />
             {othersWaiting - 1} other player{othersWaiting - 1 === 1 ? "" : "s"} searching
             today
           </Badge>
         ) : (
-          <p className="mt-4 max-w-xs text-xs text-chalk-600">
+          <p className="mt-4 max-w-xs text-xs text-bone-600">
             You are first in tonight&apos;s queue. We will hold your spot and match you the
             moment someone else joins.
           </p>

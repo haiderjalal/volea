@@ -84,7 +84,7 @@ export default async function ClubDashboard({
   if (!stats) {
     return (
       <Card className="p-6">
-        <p className="text-sm text-chalk-400">We could not load this club&apos;s numbers.</p>
+        <p className="text-sm text-bone-400">We could not load this club&apos;s numbers.</p>
       </Card>
     );
   }
@@ -98,10 +98,10 @@ export default async function ClubDashboard({
     <div className="mx-auto max-w-3xl space-y-8">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-chalk-100">
+          <h1 className="font-display text-4xl font-light text-bone-100">
             {club.name}
           </h1>
-          <p className="mt-1 text-sm text-chalk-500">
+          <p className="mt-1 text-sm text-bone-500">
             {club.city} · {stats.courts} court{stats.courts === 1 ? "" : "s"} ·{" "}
             {formatMoney(club.price_per_hour_cents, club.currency)}/hour
           </p>
@@ -120,8 +120,8 @@ export default async function ClubDashboard({
             href={`/club?days=${r}`}
             className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
               days === r
-                ? "bg-ball-500 text-court-950"
-                : "border border-court-700 text-chalk-400 hover:border-court-600"
+                ? "bg-gold-500 text-ink-950"
+                : "border border-ink-700 text-bone-400 hover:border-ink-600"
             }`}
           >
             {r} days
@@ -168,24 +168,24 @@ export default async function ClubDashboard({
             body="Once Volea matches players onto your courts they show up here, most frequent first."
           />
         ) : (
-          <Card className="divide-y divide-court-700/60 p-0">
+          <Card className="divide-y divide-ink-700/60 p-0">
             <ul>
               {stats.top_players.map((p) => (
                 <li key={p.username}>
                   <Link
                     href={`/players/${p.username}`}
-                    className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-court-800/50"
+                    className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-ink-800/50"
                   >
                     <Avatar name={p.full_name} src={p.avatar_url} size={34} />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium text-chalk-200">
+                      <span className="block truncate text-sm font-medium text-bone-200">
                         {p.full_name}
                       </span>
-                      <span className="block text-xs text-chalk-600">
+                      <span className="block text-xs text-bone-600">
                         last played {formatSlot(p.last_seen, club.timezone)}
                       </span>
                     </span>
-                    <Badge tone="teal">
+                    <Badge tone="court">
                       {p.plays} visit{p.plays === 1 ? "" : "s"}
                     </Badge>
                   </Link>
@@ -216,19 +216,19 @@ export default async function ClubDashboard({
         <SectionHeading title="Tournaments" />
         <div className="space-y-3">
           {(tournaments ?? []).length > 0 ? (
-            <Card className="divide-y divide-court-700/60 p-0">
+            <Card className="divide-y divide-ink-700/60 p-0">
               <ul>
                 {(tournaments ?? []).map((t) => (
                   <li key={t.id}>
                     <Link
                       href={`/tournaments/${t.slug}`}
-                      className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-court-800/50"
+                      className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-ink-800/50"
                     >
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-medium text-chalk-200">
+                        <span className="block truncate text-sm font-medium text-bone-200">
                           {t.name}
                         </span>
-                        <span className="block text-xs text-chalk-600">
+                        <span className="block text-xs text-bone-600">
                           {formatSlot(t.starts_at, club.timezone)} · {t.size} teams
                         </span>
                       </span>
@@ -243,7 +243,7 @@ export default async function ClubDashboard({
         </div>
       </section>
 
-      <p className="flex items-center gap-2 text-xs text-chalk-600">
+      <p className="flex items-center gap-2 text-xs text-bone-600">
         <Plus size={13} aria-hidden="true" />
         Revenue is a snapshot taken when each match is booked, so changing your hourly
         price never rewrites past numbers.

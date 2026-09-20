@@ -23,8 +23,8 @@ export function PeakHours({
 
   return (
     <Card className="p-4">
-      <h3 className="text-sm font-semibold text-chalk-200">When your courts are busy</h3>
-      <p className="mt-0.5 text-xs text-chalk-600">
+      <h3 className="text-sm font-semibold text-bone-200">When your courts are busy</h3>
+      <p className="mt-0.5 text-xs text-bone-600">
         Matches per hour over the period. Flat bars are the hours worth discounting.
       </p>
 
@@ -39,12 +39,12 @@ export function PeakHours({
           return (
             <div key={h} className="flex flex-1 flex-col items-center gap-1">
               <div
-                className={`w-full rounded-t ${count > 0 ? "bg-teal-500" : "bg-court-800"}`}
+                className={`w-full rounded-t ${count > 0 ? "bg-court-500" : "bg-ink-800"}`}
                 style={{ height: `${Math.max(3, (count / peak) * 100)}%` }}
                 title={`${formatClock(`${String(h).padStart(2, "0")}:00`)} — ${count} match${count === 1 ? "" : "es"}`}
               />
               {h % 3 === 0 ? (
-                <span className="text-[9px] text-chalk-600 tabular-nums">{h}</span>
+                <span className="text-[9px] text-bone-600 tabular-nums">{h}</span>
               ) : (
                 <span className="text-[9px] text-transparent">.</span>
               )}
@@ -61,8 +61,8 @@ export function RevenueTrend({ stats }: { stats: ClubStats }) {
   if (days.length === 0) {
     return (
       <Card className="p-4">
-        <h3 className="text-sm font-semibold text-chalk-200">Revenue</h3>
-        <p className="mt-3 text-sm text-chalk-600">
+        <h3 className="text-sm font-semibold text-bone-200">Revenue</h3>
+        <p className="mt-3 text-sm text-bone-600">
           No bookings in this period yet. Revenue is counted from the court price at the
           moment a match is booked.
         </p>
@@ -81,8 +81,8 @@ export function RevenueTrend({ stats }: { stats: ClubStats }) {
 
   return (
     <Card className="p-4">
-      <h3 className="text-sm font-semibold text-chalk-200">Revenue by day</h3>
-      <p className="mt-0.5 text-xs text-chalk-600">
+      <h3 className="text-sm font-semibold text-bone-200">Revenue by day</h3>
+      <p className="mt-0.5 text-xs text-bone-600">
         Peak day {formatMoney(max, stats.currency)}
       </p>
       <svg
@@ -95,7 +95,7 @@ export function RevenueTrend({ stats }: { stats: ClubStats }) {
         <polyline
           points={points}
           fill="none"
-          stroke="var(--color-ball-500)"
+          stroke="var(--color-gold-500)"
           strokeWidth="1.6"
           vectorEffect="non-scaling-stroke"
           strokeLinejoin="round"

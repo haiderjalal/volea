@@ -18,16 +18,16 @@ function Team({
       className={cn(
         "flex-1 rounded-xl border p-3",
         won === true
-          ? "border-ball-500/50 bg-ball-500/5"
+          ? "border-gold-500/50 bg-gold-500/5"
           : won === false
-            ? "border-court-700 opacity-60"
-            : "border-court-700",
+            ? "border-ink-700 opacity-60"
+            : "border-ink-700",
       )}
     >
-      <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-chalk-600">
+      <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-bone-600">
         {label}
         {won === true ? (
-          <Trophy size={12} className="text-ball-400" aria-label="Winners" />
+          <Trophy size={12} className="text-gold-300" aria-label="Winners" />
         ) : null}
       </p>
       <ul className="space-y-2">
@@ -35,7 +35,7 @@ function Team({
           <li key={p.player_id}>
             <Link
               href={`/players/${p.profile?.username ?? ""}`}
-              className="flex items-center gap-2 rounded-lg hover:bg-court-800/60"
+              className="flex items-center gap-2 rounded-lg hover:bg-ink-800/60"
             >
               <Avatar
                 name={p.profile?.full_name ?? "Player"}
@@ -43,12 +43,12 @@ function Team({
                 size={28}
               />
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium text-chalk-200">
+                <span className="block truncate text-sm font-medium text-bone-200">
                   {p.profile?.full_name ?? "Player"}
                 </span>
               </span>
               {p.profile ? (
-                <span className="shrink-0 text-xs font-bold text-ball-400">
+                <span className="shrink-0 text-xs font-bold text-gold-300">
                   {p.profile.level.toFixed(1)}
                 </span>
               ) : null}
@@ -77,14 +77,14 @@ export function MatchCard({
     <Card className="p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="flex items-center gap-1.5 text-sm font-semibold text-chalk-100">
-            <MapPin size={14} className="text-teal-400" aria-hidden="true" />
+          <p className="flex items-center gap-1.5 text-sm font-semibold text-bone-100">
+            <MapPin size={14} className="text-court-400" aria-hidden="true" />
             {match.club?.name ?? "Club"}
             {match.court ? (
-              <span className="font-normal text-chalk-500">· {match.court.name}</span>
+              <span className="font-normal text-bone-500">· {match.court.name}</span>
             ) : null}
           </p>
-          <p className="mt-1 flex items-center gap-1.5 text-xs text-chalk-500">
+          <p className="mt-1 flex items-center gap-1.5 text-xs text-bone-500">
             <Clock size={12} aria-hidden="true" />
             {formatSlot(match.starts_at, tz)}
           </p>
@@ -93,11 +93,11 @@ export function MatchCard({
         <div className="flex shrink-0 items-center gap-2">
           {match.origin === "tournament" ? <Badge tone="amber">Tournament</Badge> : null}
           {done ? (
-            <Badge tone="ball">{scoreLine(match.score)}</Badge>
+            <Badge tone="gold">{scoreLine(match.score)}</Badge>
           ) : match.status === "cancelled" ? (
             <Badge tone="red">Cancelled</Badge>
           ) : (
-            <Badge tone="teal">Scheduled</Badge>
+            <Badge tone="court">Scheduled</Badge>
           )}
         </div>
       </div>
@@ -108,7 +108,7 @@ export function MatchCard({
           label="Team 1"
           won={done ? match.winning_team === 1 : null}
         />
-        <span className="self-center text-xs font-bold text-chalk-600">vs</span>
+        <span className="self-center text-xs font-bold text-bone-600">vs</span>
         <Team
           players={team2}
           label="Team 2"
@@ -116,8 +116,8 @@ export function MatchCard({
         />
       </div>
 
-      <div className="mt-3 flex items-center justify-between gap-3 border-t border-court-700/70 pt-3">
-        <span className="text-xs text-chalk-600">
+      <div className="mt-3 flex items-center justify-between gap-3 border-t border-ink-700/70 pt-3">
+        <span className="text-xs text-bone-600">
           {match.price_total_cents > 0
             ? `${formatMoney(match.price_total_cents, match.currency)} · split ${
                 players.length || 4

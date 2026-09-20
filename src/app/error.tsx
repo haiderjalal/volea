@@ -18,8 +18,8 @@ export default function Error({
   return (
     <div className="mx-auto max-w-md py-12">
       <Card className="p-6 text-center">
-        <h1 className="text-lg font-bold text-chalk-100">Something went wrong</h1>
-        <p className="mt-2 text-sm text-chalk-500">
+        <h1 className="font-display text-3xl font-light text-bone-100">Something went wrong</h1>
+        <p className="mt-2 text-sm text-bone-500">
           That is on us, not you. Try again — if it keeps happening, come back in a few
           minutes.
         </p>

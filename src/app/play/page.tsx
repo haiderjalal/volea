@@ -66,10 +66,10 @@ export default async function PlayPage({
   return (
     <div className="mx-auto max-w-xl space-y-8">
       <header>
-        <h1 className="text-2xl font-extrabold tracking-tight text-chalk-100">
+        <h1 className="font-display text-4xl font-light text-bone-100">
           {waiting ? "You are in the queue" : "Find a game"}
         </h1>
-        <p className="mt-1 text-sm text-chalk-500">
+        <p className="mt-1 text-sm text-bone-500">
           {waiting
             ? "Keep this page open — we will move you straight onto a court."
             : "Tell us when you are free. We handle the rest."}
@@ -91,7 +91,7 @@ export default async function PlayPage({
           <SectionHeading
             title="Your next games"
             action={
-              <Link href="/matches" className="text-xs font-medium text-teal-400 hover:underline">
+              <Link href="/matches" className="text-xs font-medium text-court-400 hover:underline">
                 All matches
               </Link>
             }
@@ -106,10 +106,10 @@ export default async function PlayPage({
         </section>
       ) : !waiting ? (
         <Card className="flex items-center gap-3 p-4">
-          <CalendarDays size={18} className="shrink-0 text-chalk-600" aria-hidden="true" />
-          <p className="text-sm text-chalk-500">
+          <CalendarDays size={18} className="shrink-0 text-bone-600" aria-hidden="true" />
+          <p className="text-sm text-bone-500">
             No games booked yet. Join the queue above, or{" "}
-            <Link href="/tournaments" className="font-medium text-teal-400 hover:underline">
+            <Link href="/tournaments" className="font-medium text-court-400 hover:underline">
               enter a tournament
             </Link>
             .
@@ -119,19 +119,19 @@ export default async function PlayPage({
 
       {!waiting ? (
         <Card className="p-4">
-          <h2 className="text-sm font-semibold text-chalk-200">How matching works</h2>
-          <ol className="mt-3 space-y-2.5 text-sm text-chalk-500">
+          <h2 className="text-sm font-semibold text-bone-200">How matching works</h2>
+          <ol className="mt-3 space-y-2.5 text-sm text-bone-500">
             <li className="flex gap-2.5">
-              <span className="font-bold text-ball-400">1</span>
+              <span className="font-bold text-gold-300">1</span>
               You give a window — say 8pm to 11pm.
             </li>
             <li className="flex gap-2.5">
-              <span className="font-bold text-ball-400">2</span>
+              <span className="font-bold text-gold-300">2</span>
               Volea waits for three more players whose windows overlap yours by at least
               90 minutes.
             </li>
             <li className="flex gap-2.5">
-              <span className="font-bold text-ball-400">3</span>
+              <span className="font-bold text-gold-300">3</span>
               It books a free court, splits you into balanced teams and tells everyone
               where to be.
             </li>

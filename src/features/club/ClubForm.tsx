@@ -77,7 +77,7 @@ export function ClubForm() {
 
         <fieldset className="space-y-2">
           <div className="flex items-center justify-between">
-            <legend className="text-sm font-medium text-chalk-300">
+            <legend className="text-sm font-medium text-bone-300">
               Map position
             </legend>
             <Button
@@ -117,7 +117,7 @@ export function ClubForm() {
               onChange={(e) => setCoords((c) => ({ ...c, lng: e.target.value }))}
             />
           </div>
-          <p className="text-xs text-chalk-600">
+          <p className="text-xs text-bone-600">
             This is where your pin sits on the map. Stand at the club and tap “use my
             location”, or copy the coordinates from any map app.
           </p>

@@ -75,7 +75,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
           </p>
         ) : null}
         {state.ok ? (
-          <p role="status" className="rounded-xl bg-teal-500/10 p-3 text-sm text-teal-400">
+          <p role="status" className="rounded-xl bg-court-500/10 p-3 text-sm text-court-400">
             Saved.
           </p>
         ) : null}

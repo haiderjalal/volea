@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Crosshair, MapPin, Clock, Search } from "lucide-react";
+import { Crosshair, MapPin, Clock, Search, ArrowUpRight } from "lucide-react";
 import { ClubMap } from "./ClubMap";
 import { Badge, Button, Card, EmptyState, Input } from "@/components/ui";
 import { cn, distanceKm, formatClock, formatMoney } from "@/lib/format";
@@ -57,20 +57,20 @@ export function CourtFinder({ clubs }: { clubs: ClubWithCourts[] }) {
   }, [clubs, query, me]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-2">
+    <div className="space-y-6">
+      <div className="flex gap-3">
         <div className="relative flex-1">
           <Search
-            size={16}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-chalk-600"
+            size={15}
+            className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-bone-600"
             aria-hidden="true"
           />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search clubs or areas"
+            placeholder="Search clubs or sectors"
             aria-label="Search clubs"
-            className="pl-9"
+            className="pl-11"
           />
         </div>
         <Button
@@ -80,8 +80,8 @@ export function CourtFinder({ clubs }: { clubs: ClubWithCourts[] }) {
           aria-label="Find clubs near me"
           className="shrink-0"
         >
-          <Crosshair size={16} aria-hidden="true" />
-          <span className="hidden sm:inline">{locating ? "Locating…" : "Near me"}</span>
+          <Crosshair size={15} aria-hidden="true" />
+          <span className="hidden sm:inline">{locating ? "Locating" : "Near me"}</span>
         </Button>
       </div>
 
@@ -97,14 +97,14 @@ export function CourtFinder({ clubs }: { clubs: ClubWithCourts[] }) {
           selectedId={selected}
           onSelect={setSelected}
           me={me}
-          className="h-[46vh] min-h-[260px] w-full md:h-[380px]"
+          className="h-[44vh] min-h-[280px] w-full md:h-[420px]"
         />
       </Card>
 
       {visible.length === 0 ? (
         <EmptyState
-          icon={<MapPin size={28} />}
-          title="No clubs match that"
+          icon={<MapPin size={30} strokeWidth={1.2} />}
+          title="Nothing matches that"
           body="Try a different name, or clear the search to see every registered court."
           action={
             <Button variant="outline" onClick={() => setQuery("")}>
@@ -113,43 +113,45 @@ export function CourtFinder({ clubs }: { clubs: ClubWithCourts[] }) {
           }
         />
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2">
+        <ul className="grid gap-4 sm:grid-cols-2">
           {visible.map((club) => {
             const km = me ? distanceKm(me, club) : null;
+            const isSelected = selected === club.id;
             return (
               <li key={club.id}>
-                <Card
-                  className={cn(
-                    "h-full transition-colors",
-                    selected === club.id ? "border-teal-500/70" : "hover:border-court-600",
-                  )}
-                >
-                  <div className="flex h-full flex-col p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <button
-                          type="button"
-                          onClick={() => setSelected(club.id)}
-                          className="text-left text-base font-semibold text-chalk-100 hover:text-ball-400"
-                        >
+                <Card className={cn("lift group h-full", isSelected && "border-gold-500/45")}>
+                  <div className="flex h-full flex-col p-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setSelected(club.id)}
+                        className="min-w-0 text-left"
+                      >
+                        <span className="block font-display text-2xl leading-tight font-light text-bone-100 transition-colors duration-300 group-hover:text-gold-200">
                           {club.name}
-                        </button>
-                        <p className="mt-0.5 truncate text-sm text-chalk-500">
+                        </span>
+                        <span className="mt-1.5 block truncate text-[0.65rem] tracking-[0.12em] text-bone-500 uppercase">
                           {club.address ?? club.city}
-                        </p>
-                      </div>
-                      <Badge tone="ball" className="shrink-0">
-                        {formatMoney(club.price_per_hour_cents, club.currency)}/hr
-                      </Badge>
+                        </span>
+                      </button>
+
+                      <span className="shrink-0 text-right">
+                        <span className="block font-display text-lg leading-none text-gold-300 tabular-nums">
+                          {formatMoney(club.price_per_hour_cents, club.currency)}
+                        </span>
+                        <span className="mt-1 block text-[0.55rem] tracking-[0.16em] text-bone-600 uppercase">
+                          Per hour
+                        </span>
+                      </span>
                     </div>
 
-                    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-chalk-500">
+                    <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-bone-500">
                       <span className="inline-flex items-center gap-1.5">
-                        <MapPin size={13} aria-hidden="true" />
-                        {km !== null ? `${km.toFixed(1)} km away` : club.city}
+                        <MapPin size={12} strokeWidth={1.5} aria-hidden="true" />
+                        {km !== null ? `${km.toFixed(1)} km` : club.city}
                       </span>
                       <span className="inline-flex items-center gap-1.5">
-                        <Clock size={13} aria-hidden="true" />
+                        <Clock size={12} strokeWidth={1.5} aria-hidden="true" />
                         {formatClock(club.opens_at)} – {formatClock(club.closes_at)}
                       </span>
                       <span>
@@ -158,7 +160,7 @@ export function CourtFinder({ clubs }: { clubs: ClubWithCourts[] }) {
                     </div>
 
                     {club.amenities.length > 0 ? (
-                      <ul className="mt-3 flex flex-wrap gap-1.5">
+                      <ul className="mt-4 flex flex-wrap gap-1.5">
                         {club.amenities.slice(0, 3).map((a) => (
                           <li key={a}>
                             <Badge>{a}</Badge>
@@ -167,16 +169,18 @@ export function CourtFinder({ clubs }: { clubs: ClubWithCourts[] }) {
                       </ul>
                     ) : null}
 
-                    <div className="mt-4 flex gap-2 pt-1">
+                    <div className="mt-auto flex items-center gap-4 pt-7">
                       <Link href={`/play?club=${club.id}`} className="flex-1">
                         <Button size="sm" className="w-full">
                           Find a game here
                         </Button>
                       </Link>
-                      <Link href={`/clubs/${club.slug}`}>
-                        <Button size="sm" variant="outline">
-                          Details
-                        </Button>
+                      <Link
+                        href={`/clubs/${club.slug}`}
+                        className="inline-flex items-center gap-1 text-[0.66rem] font-medium tracking-[0.14em] text-bone-500 uppercase transition-colors duration-300 hover:text-gold-200"
+                      >
+                        Details
+                        <ArrowUpRight size={13} aria-hidden="true" />
                       </Link>
                     </div>
                   </div>

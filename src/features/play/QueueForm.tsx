@@ -45,15 +45,15 @@ export function QueueForm({
     <Card className="p-5">
       <form action={formAction} className="space-y-4">
         <fieldset>
-          <legend className="text-sm font-medium text-chalk-300">Format</legend>
+          <legend className="text-sm font-medium text-bone-300">Format</legend>
           <div className="mt-2 grid grid-cols-2 gap-2">
             {(["doubles", "singles"] as const).map((m) => (
               <label
                 key={m}
                 className={`cursor-pointer rounded-xl border px-4 py-3 text-center text-sm font-semibold capitalize transition-colors ${
                   mode === m
-                    ? "border-teal-500 bg-teal-500/10 text-teal-400"
-                    : "border-court-700 text-chalk-500 hover:border-court-600"
+                    ? "border-court-500 bg-court-500/10 text-court-400"
+                    : "border-ink-700 text-bone-500 hover:border-ink-600"
                 }`}
               >
                 <input
@@ -65,7 +65,7 @@ export function QueueForm({
                   className="sr-only"
                 />
                 {m}
-                <span className="mt-0.5 block text-xs font-normal text-chalk-600">
+                <span className="mt-0.5 block text-xs font-normal text-bone-600">
                   {m === "doubles" ? "4 players" : "2 players"}
                 </span>
               </label>
@@ -92,7 +92,7 @@ export function QueueForm({
             <Input type="time" name="window_end" required defaultValue="23:00" step={900} />
           </Field>
         </div>
-        <p className="-mt-1 text-xs text-chalk-600">
+        <p className="-mt-1 text-xs text-bone-600">
           Give us at least 90 minutes — that is one padel slot. A wider window matches faster.
         </p>
 
@@ -117,9 +117,9 @@ export function QueueForm({
           </Select>
         </Field>
 
-        <p className="flex items-center gap-2 text-xs text-chalk-600">
+        <p className="flex items-center gap-2 text-xs text-bone-600">
           You play at
-          <Badge tone="ball">{level.toFixed(1)}</Badge>
+          <Badge tone="gold">{level.toFixed(1)}</Badge>
         </p>
 
         {state.error ? (

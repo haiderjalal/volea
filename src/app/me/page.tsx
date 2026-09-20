@@ -28,7 +28,7 @@ export default async function MePage() {
   if (!profile) {
     return (
       <Card className="p-6">
-        <p className="text-sm text-chalk-400">
+        <p className="text-sm text-bone-400">
           We could not load your profile. Try signing out and back in.
         </p>
         <form action={signOut} className="mt-4">

@@ -9,10 +9,10 @@ export const metadata = {
 export default function SignUpPage() {
   return (
     <div className="mx-auto max-w-sm py-8">
-      <h1 className="text-2xl font-extrabold tracking-tight text-chalk-100">
+      <h1 className="font-display text-4xl font-light text-bone-100">
         Create your profile
       </h1>
-      <p className="mt-1.5 text-sm text-chalk-500">
+      <p className="mt-1.5 text-sm text-bone-500">
         Everyone starts at level 2.0. Your level moves with every result you report.
       </p>
 
@@ -20,9 +20,9 @@ export default function SignUpPage() {
         <AuthForm mode="signup" />
       </div>
 
-      <p className="mt-6 text-center text-sm text-chalk-500">
+      <p className="mt-6 text-center text-sm text-bone-500">
         Already play here?{" "}
-        <Link href="/login" className="font-semibold text-ball-400 hover:underline">
+        <Link href="/login" className="font-semibold text-gold-300 hover:underline">
           Sign in
         </Link>
       </p>

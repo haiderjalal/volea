@@ -68,7 +68,7 @@ export function AuthForm({ mode, next }: { mode: "signin" | "signup"; next?: str
         </p>
       ) : null}
       {state.notice ? (
-        <p role="status" className="rounded-xl bg-teal-500/10 p-3 text-sm text-teal-400">
+        <p role="status" className="rounded-xl bg-court-500/10 p-3 text-sm text-court-400">
           {state.notice}
         </p>
       ) : null}

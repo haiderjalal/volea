@@ -55,10 +55,15 @@ export function ClubMap({ clubs, selectedId, onSelect, me, className }: Props) {
       const pin = (club: Club) =>
         L.divIcon({
           className: "",
-          html: `<span class="flex h-9 w-9 -translate-x-1/2 -translate-y-full items-center justify-center rounded-full border-2 border-court-950 bg-teal-500 text-[11px] font-bold text-court-950 shadow-lg">${priceBadge(
-            club.price_per_hour_cents,
-          )}</span>`,
-          iconSize: [36, 36],
+          html: `<span style="
+            display:flex;align-items:center;justify-content:center;
+            width:44px;height:30px;transform:translate(-50%,-100%);
+            background:linear-gradient(180deg,#E2CD9D,#C09F63);
+            color:#06080A;font-size:10px;font-weight:700;letter-spacing:0.04em;
+            border-radius:3px;box-shadow:0 8px 20px -8px rgba(0,0,0,.95);
+            font-family:var(--font-inter),sans-serif;
+          ">${priceBadge(club.price_per_hour_cents)}</span>`,
+          iconSize: [44, 30],
         });
 
       for (const club of clubs) {
@@ -69,7 +74,7 @@ export function ClubMap({ clubs, selectedId, onSelect, me, className }: Props) {
         })
           .addTo(map)
           .bindPopup(
-            `<strong>${club.name}</strong><br/><span style="color:#8AA5A2">${club.address ?? club.city}</span>`,
+            `<strong style="font-weight:600;color:#F4F1EA">${club.name}</strong><br/><span style="color:#857F75">${club.address ?? club.city}</span>`,
           )
           .on("click", () => onSelectRef.current?.(club.id));
         markersRef.current[club.id] = marker;

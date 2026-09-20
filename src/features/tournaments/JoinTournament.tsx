@@ -29,9 +29,9 @@ export function JoinTournament({
 
   if (state.ok) {
     return (
-      <Card className="border-teal-500/40 bg-teal-500/5 p-5 text-center">
-        <p className="text-sm font-semibold text-teal-400">You are in the draw.</p>
-        <p className="mt-1 text-sm text-chalk-500">
+      <Card className="border-court-500/40 bg-court-500/5 p-5 text-center">
+        <p className="text-sm font-semibold text-court-400">You are in the draw.</p>
+        <p className="mt-1 text-sm text-bone-500">
           The bracket is seeded by level once entries close.
         </p>
       </Card>
@@ -40,7 +40,7 @@ export function JoinTournament({
 
   return (
     <Card className="p-5">
-      <h2 className="text-base font-semibold text-chalk-100">Enter this tournament</h2>
+      <h2 className="font-display text-2xl font-light text-bone-100">Enter this tournament</h2>
       <form action={formAction} className="mt-4 space-y-4">
         <input type="hidden" name="tournament_id" value={tournamentId} />
         <input type="hidden" name="mode" value={mode} />

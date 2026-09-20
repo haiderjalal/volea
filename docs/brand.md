@@ -6,57 +6,104 @@
 the sport's vocabulary is Spanish (*bandeja*, *víbora*, *punto de oro*), so a
 Spanish name reads native to players rather than invented by a startup.
 
-Five letters, two syllables, vo-LAY-uh. Says the sport without saying "padel", so
-the name still fits if the product ever covers pickleball or tennis.
+Five letters, two syllables, vo-LAY-uh. Set as `VOLEA` in the display serif with
+0.14em tracking — a wordmark, not a logotype.
 
 ## Tagline
 
 > **Find your fourth.**
 
-Padel is played 2v2. The universal pain is being one player short — 47% of players
-name finding partners as their number one obstacle. "Find your fourth" is
-insider shorthand: if you play, you have lived it. It states the product's entire
-job in three words.
+Padel is played 2v2. The universal pain is being one player short — 47% of
+players name finding partners as their number one obstacle. Three words that
+state the product's entire job, and that only a player fully understands.
 
-Supporting line: *Tell Volea when you are free. It finds three players at your
-level and books the court.*
+## The idea
+
+Quiet luxury, not loud. The restraint *is* the positioning: one metal, one
+accent, near-black, and a great deal of space. Nothing glows, nothing bounces,
+nothing is rounded into a consumer-app pill. A member should feel the interface
+was art-directed, not assembled.
 
 ## Logo
 
 A padel racket face — solid, rounded, teardrop toward the handle, with the
 signature perforations — and the **V** of Volea cut clean out of it. A ball sits
-off the top-right corner, mid-volley.
+off the top-right corner, mid-volley, drawn as a gold ring rather than filled.
 
-The mark works down to 16px because the V holds its shape when the perforations
-disappear. Files: `public/brand/logomark.svg`, component `src/components/Logo.tsx`.
+Struck in a gold gradient so it reads as an emblem pressed into the page. The
+mark survives to 16px because the V holds once the perforations vanish.
+
+Files: `public/brand/logomark.svg`, component `src/components/Logo.tsx`.
 
 ## Colour
 
-Dark-only, on purpose: padel is a floodlit after-work sport, played on glass
+Dark-only, on purpose: padel is a floodlit after-work sport played on glass
 courts at night. A light theme would fight the product's own atmosphere.
 
 | Token | Hex | Use |
 | --- | --- | --- |
-| `court-950` | `#060C0E` | Page background |
-| `court-850` | `#0E191C` | Cards, surfaces |
-| `court-700` | `#1C2F34` | Borders |
-| `ball-500` | `#D7FF3E` | Primary action, winners, level numbers |
-| `teal-500` | `#14C79C` | Secondary, map pins, live states |
-| `chalk-100` | `#F2F7F5` | Primary text |
-| `chalk-500` | `#8AA5A2` | Secondary text |
+| `ink-950` | `#06080A` | Page. Warm near-black — cold greys read cheap |
+| `ink-850` | `#0F1315` | Cards, surfaces |
+| `ink-700` | `#202729` | Hairline borders |
+| `gold-300` | `#E2CD9D` | Numerals, levels, prices, winners |
+| `gold-500` | `#C09F63` | Primary action, the single metal |
+| `court-500` | `#22735D` | Deep bottle green. Live states, map, secondary |
+| `bone-100` | `#F4F1EA` | Primary text. Never pure white — it glares on black |
+| `bone-500` | `#857F75` | Secondary text |
 
-`ball` is the padel ball's yellow-green. `teal` is the court surface. `chalk` is
-the line paint. The page carries two soft radial gradients from the top corners —
-floodlights bleeding onto the court.
+One metal only. Gold carries every moment that matters — a price, a level, a
+win, a call to action — and nothing else is allowed to compete with it.
 
-**Never hardcode a hex in a component.** Everything is a Tailwind theme token
-defined in `src/app/globals.css`.
+Signals (`flag-red`, `flag-amber`) are deliberately desaturated so an error sits
+*inside* the palette rather than screaming on top of it.
+
+Two fixed radial gradients light the page from opposite corners — warm from
+above, court-green from below — under a 3.5%-opacity film grain. The grain is
+what stops a flat dark UI reading as plastic.
+
+**Never hardcode a hex in a component.** Everything is a Tailwind theme token in
+`src/app/globals.css`.
 
 ## Type
 
-**Inter**, via `next/font`. Headings are extrabold with tight tracking
-(`-0.02em`); body is regular at comfortable line height. Numbers use
-`tabular-nums` everywhere — scores, ratings, ranks and revenue must not jitter.
+**Cormorant Garamond** for display, light weights only — at large sizes the high
+stroke contrast is the entire point. Headlines are set large and airy; the
+italic is reserved for the one word in a line that should land (*fourth*).
+
+**Inter** for everything a user has to read quickly or act on: body copy, labels,
+controls, data.
+
+Two rules that carry most of the character:
+
+- **Wide tracking on small caps.** Eyebrows at `0.26em`, buttons at `0.12em`,
+  labels at `0.16em`. Uppercase with generous tracking is the house style of
+  every luxury maison and it stops short labels looking flimsy in whitespace.
+- **`tabular-nums` everywhere numbers appear** — scores, ratings, ranks, money,
+  countdowns. Figures must never jitter as they update.
+
+## Motion
+
+Motion is decoration, never information. Every page renders complete and correct
+with JavaScript disabled and with animation stripped.
+
+| Class | Use |
+| --- | --- |
+| `.rise` | Above-the-fold entrance, staggered with `--d` |
+| `.reveal` | Below-the-fold, via `<Reveal>` and IntersectionObserver |
+| `.sheen` | Slow specular sweep across gold on hover |
+| `.lift` | Card raises 3px, border warms to gold |
+| `.drift` | Slow idle float |
+
+Easing is a single custom curve, `--ease-luxe` `cubic-bezier(0.22, 1, 0.36, 1)` —
+fast out, long settle. Durations are slow by app standards (0.8–0.9s on
+entrances) because haste reads as cheap.
+
+`prefers-reduced-motion: reduce` collapses every duration to 0.01ms and forces
+`.reveal` visible. No CSS-only dependency on motion, anywhere.
+
+No animation library: the whole system is CSS plus one IntersectionObserver. On
+a phone on Pakistani mobile data, the fastest interface is also the most
+expensive-feeling one.
 
 ## Voice
 

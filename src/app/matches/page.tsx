@@ -24,10 +24,10 @@ export default async function MatchesPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-8">
       <header>
-        <h1 className="text-2xl font-extrabold tracking-tight text-chalk-100">
+        <h1 className="font-display text-4xl font-light text-bone-100">
           Your matches
         </h1>
-        <p className="mt-1 text-sm text-chalk-500">
+        <p className="mt-1 text-sm text-bone-500">
           {matches.length === 0
             ? "Nothing here yet."
             : `${history.length} played · ${upcoming.length} coming up`}

@@ -47,7 +47,7 @@ export function ReportResult({ matchId }: { matchId: string }) {
       <input type="hidden" name="winning_team" value={team} />
 
       <fieldset>
-        <legend className="text-sm font-medium text-chalk-300">Who won?</legend>
+        <legend className="text-sm font-medium text-bone-300">Who won?</legend>
         <div className="mt-2 grid grid-cols-2 gap-2">
           {([1, 2] as const).map((t) => (
             <button
@@ -57,8 +57,8 @@ export function ReportResult({ matchId }: { matchId: string }) {
               aria-pressed={team === t}
               className={`rounded-xl border px-3 py-2 text-sm font-semibold transition-colors ${
                 team === t
-                  ? "border-ball-500 bg-ball-500/10 text-ball-400"
-                  : "border-court-700 text-chalk-500 hover:border-court-600"
+                  ? "border-gold-500 bg-gold-500/10 text-gold-300"
+                  : "border-ink-700 text-bone-500 hover:border-ink-600"
               }`}
             >
               Team {t}

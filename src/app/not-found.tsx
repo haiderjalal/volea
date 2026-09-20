@@ -5,9 +5,9 @@ export default function NotFound() {
   return (
     <div className="mx-auto max-w-md py-12">
       <Card className="p-6 text-center">
-        <p className="text-4xl font-extrabold text-ball-400">404</p>
-        <h1 className="mt-2 text-lg font-bold text-chalk-100">Out of bounds</h1>
-        <p className="mt-2 text-sm text-chalk-500">
+        <p className="font-display text-6xl font-light text-gold-300">404</p>
+        <h1 className="mt-3 font-display text-3xl font-light text-bone-100">Out of bounds</h1>
+        <p className="mt-2 text-sm text-bone-500">
           That page is not here. The courts are, though.
         </p>
         <div className="mt-5 flex justify-center gap-2">

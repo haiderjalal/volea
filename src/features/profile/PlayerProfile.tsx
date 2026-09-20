@@ -35,12 +35,12 @@ export function PlayerProfile({
         <div className="flex items-start gap-4">
           <Avatar name={profile.full_name} src={profile.avatar_url} size={64} />
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-xl font-extrabold tracking-tight text-chalk-100">
+            <h1 className="truncate font-display text-3xl font-light text-bone-100">
               {profile.full_name}
             </h1>
-            <p className="text-sm text-chalk-600">@{profile.username}</p>
+            <p className="text-sm text-bone-600">@{profile.username}</p>
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <Badge tone="ball">
+              <Badge tone="gold">
                 Level {profile.level.toFixed(1)} · {levelLabel(profile.level)}
               </Badge>
               <Badge>{SIDE_LABEL[profile.preferred_side]}</Badge>
@@ -55,7 +55,7 @@ export function PlayerProfile({
         </div>
 
         {profile.bio ? (
-          <p className="mt-4 text-sm text-chalk-400">{profile.bio}</p>
+          <p className="mt-4 text-sm text-bone-400">{profile.bio}</p>
         ) : null}
 
         {children ? <div className="mt-4">{children}</div> : null}
@@ -78,24 +78,24 @@ export function PlayerProfile({
       {partners.length > 0 ? (
         <section>
           <SectionHeading title="Regular partners" />
-          <Card className="divide-y divide-court-700/60 p-0">
+          <Card className="divide-y divide-ink-700/60 p-0">
             <ul>
               {partners.map((p) => (
                 <li key={p.id}>
                   <Link
                     href={`/players/${p.username}`}
-                    className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-court-800/50"
+                    className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-ink-800/50"
                   >
                     <Avatar name={p.full_name} src={p.avatar_url} size={34} />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium text-chalk-200">
+                      <span className="block truncate text-sm font-medium text-bone-200">
                         {p.full_name}
                       </span>
-                      <span className="block text-xs text-chalk-600">
+                      <span className="block text-xs text-bone-600">
                         {p.won} of {p.played} won together
                       </span>
                     </span>
-                    <Badge tone={p.won * 2 >= p.played ? "teal" : "neutral"}>
+                    <Badge tone={p.won * 2 >= p.played ? "court" : "neutral"}>
                       {Math.round((p.won / p.played) * 100)}%
                     </Badge>
                   </Link>
