@@ -4,11 +4,17 @@
 //
 //   npm run db:bundle
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const root = join(import.meta.dirname, "..", "supabase");
 const read = (p) => readFileSync(join(root, p), "utf8").trimEnd();
+
+// Globbed, not listed: a hardcoded list is how a new migration silently fails
+// to reach setup.sql.
+const migrations = readdirSync(join(root, "migrations"))
+  .filter((f) => f.endsWith(".sql"))
+  .sort();
 
 const HEADER = `-- ============================================================================
 --  Volea — one-shot database setup
@@ -33,8 +39,7 @@ end $guard$;
 `;
 
 const SECTIONS = [
-  ["schema", "migrations/0001_init.sql"],
-  ["engine", "migrations/0002_engine.sql"],
+  ...migrations.map((f) => [f.replace(/^\d+_|\.sql$/g, "").replace(/_/g, " "), `migrations/${f}`]),
   ["demo clubs", "seed.sql"],
   ["self-check", "tests/matchmaking.test.sql"],
 ];
