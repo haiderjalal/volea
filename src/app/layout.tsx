@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { TopBar } from "@/components/TopBar";
 import { BottomNav } from "@/components/BottomNav";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const inter = Inter({
@@ -10,10 +11,8 @@ const inter = Inter({
   display: "swap",
 });
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Volea — find your fourth",
     template: "%s · Volea",
@@ -28,7 +27,7 @@ export const metadata: Metadata = {
     title: "Volea — find your fourth",
     description:
       "Tell Volea when you are free. It finds three players at your level and books the court.",
-    url: SITE,
+    url: SITE_URL,
   },
   twitter: {
     card: "summary_large_image",

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { absoluteUrl } from "@/lib/site";
 
 export interface AuthState {
   error?: string;
@@ -62,7 +63,7 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
     password,
     options: {
       data: { full_name, username, city },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+      emailRedirectTo: absoluteUrl("/auth/callback"),
     },
   });
 
