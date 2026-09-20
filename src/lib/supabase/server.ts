@@ -2,8 +2,8 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 
 /**
- * Server-side Supabase client, pinned to the `volea` schema.
- * Cookie writes are ignored in Server Components — middleware owns session refresh.
+ * Server-side Supabase client.
+ * Cookie writes are ignored in Server Components — proxy.ts owns session refresh.
  */
 export async function createClient() {
   const cookieStore = await cookies();
@@ -12,7 +12,6 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      db: { schema: "volea" },
       cookies: {
         getAll() {
           return cookieStore.getAll();

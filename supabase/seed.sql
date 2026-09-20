@@ -1,7 +1,7 @@
 -- Volea demo seed — fictional clubs, real geography (Dubai).
 -- Safe to re-run: every insert is keyed on slug / (club, court name).
 
-insert into volea.clubs
+insert into public.clubs
   (name, slug, description, address, city, country, lat, lng, timezone,
    phone, price_per_hour_cents, currency, opens_at, closes_at, amenities, status)
 values
@@ -43,9 +43,9 @@ values
 on conflict (slug) do nothing;
 
 -- Courts per club
-insert into volea.courts (club_id, name, indoor, surface)
+insert into public.courts (club_id, name, indoor, surface)
 select c.id, v.name, v.indoor, 'artificial grass'
-from volea.clubs c
+from public.clubs c
 join (values
   ('dune-padel-club',      'Court 1', false), ('dune-padel-club',      'Court 2', false),
   ('dune-padel-club',      'Court 3', false), ('dune-padel-club',      'Court 4', false),

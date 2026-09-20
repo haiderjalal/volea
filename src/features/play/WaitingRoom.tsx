@@ -31,7 +31,7 @@ export function WaitingRoom({
         "postgres_changes",
         {
           event: "UPDATE",
-          schema: "volea",
+          schema: "public",
           table: "queue_entries",
           filter: `id=eq.${entry.id}`,
         },

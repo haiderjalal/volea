@@ -87,8 +87,9 @@ export default async function HomePage() {
         <Card className="border-flag-red/40 p-5">
           <p className="text-sm font-medium text-flag-red">Could not load courts.</p>
           <p className="mt-1 text-sm text-chalk-500">
-            The <code className="text-chalk-300">volea</code> schema may not be exposed
-            yet. Add it under Project Settings → API → Exposed schemas, then reload.
+            The database may not be set up yet. Run{" "}
+            <code className="text-chalk-300">supabase/setup.sql</code> in the Supabase SQL
+            Editor, then reload.
           </p>
         </Card>
       ) : withCounts.length === 0 ? (

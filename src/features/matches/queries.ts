@@ -2,7 +2,7 @@ import { MATCH_SELECT } from "./MatchCard";
 import type { createClient } from "@/lib/supabase/server";
 import type { Match } from "@/lib/types";
 
-/** The `volea`-scoped client, derived from the factory so it never drifts. */
+/** Derived from the factory so this signature can never drift from it. */
 type VoleaClient = Awaited<ReturnType<typeof createClient>>;
 
 /**

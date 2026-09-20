@@ -1,12 +1,12 @@
 -- Volea — matchmaking engine, rating maths, brackets, club analytics and RLS.
 
 -- ---------------------------------------------------------------- signup hook
--- Fires for EVERY auth user in this project (shared with another app), so it is
--- deliberately non-fatal: a failure here must never block a signup.
-create or replace function volea.handle_new_user()
-returns trigger language plpgsql security definer set search_path = volea, public as $fn$
+-- Fires for every auth user. Deliberately non-fatal: a profile that fails to
+-- materialise must never block somebody's signup.
+create or replace function public.handle_new_user()
+returns trigger language plpgsql security definer set search_path = public, pg_temp as $fn$
 begin
-  insert into volea.profiles (id, username, full_name, city, country)
+  insert into public.profiles (id, username, full_name, city, country)
   values (
     new.id,
     coalesce(
@@ -26,30 +26,30 @@ end $fn$;
 drop trigger if exists on_auth_user_created_volea on auth.users;
 create trigger on_auth_user_created_volea
   after insert on auth.users
-  for each row execute function volea.handle_new_user();
+  for each row execute function public.handle_new_user();
 
 -- ---------------------------------------------------------------- matchmaking
 -- Joins the queue and attempts to fill a match in the same transaction.
 -- Returns the caller's queue row: status 'waiting' means still looking,
 -- 'matched' means match_id is populated.
-create or replace function volea.join_queue(
+create or replace function public.join_queue(
   p_play_date    date,
   p_window_start time,
   p_window_end   time,
-  p_mode         volea.play_mode default 'doubles',
+  p_mode         public.play_mode default 'doubles',
   p_club_id      uuid default null,
   p_min_level    numeric default 1.0,
   p_max_level    numeric default 7.0
 )
-returns volea.queue_entries
-language plpgsql security definer set search_path = volea, public as $fn$
+returns public.queue_entries
+language plpgsql security definer set search_path = public, pg_temp as $fn$
 declare
   v_dur      constant interval := interval '90 minutes';  -- a padel slot
   v_me       uuid := auth.uid();
   v_required int;
   v_city     text;
   v_level    numeric;
-  v_entry    volea.queue_entries;
+  v_entry    public.queue_entries;
   v_cand     record;
   v_slot     record;
   v_ids      uuid[] := '{}';
@@ -71,8 +71,8 @@ begin
 
   select p.level, coalesce(p.city, c.city)
     into v_level, v_city
-  from volea.profiles p
-  left join volea.clubs c on c.id = p_club_id
+  from public.profiles p
+  left join public.clubs c on c.id = p_club_id
   where p.id = v_me;
 
   if v_city is null and p_club_id is null then
@@ -81,7 +81,7 @@ begin
 
   v_required := case when p_mode = 'doubles' then 4 else 2 end;
 
-  insert into volea.queue_entries
+  insert into public.queue_entries
     (player_id, play_date, window_start, window_end, mode, club_id, city, min_level, max_level)
   values
     (v_me, p_play_date, p_window_start, p_window_end, p_mode, p_club_id, v_city, p_min_level, p_max_level)
@@ -91,8 +91,8 @@ begin
   -- hitting the button at the same instant can never claim the same partner.
   for v_cand in
     select q.id, q.player_id, q.club_id, q.window_start, q.window_end
-    from volea.queue_entries q
-    join volea.profiles p on p.id = q.player_id
+    from public.queue_entries q
+    join public.profiles p on p.id = q.player_id
     where q.status = 'waiting'
       and q.id <> v_entry.id
       and q.play_date = p_play_date
@@ -131,8 +131,8 @@ begin
            cl.price_per_hour_cents, cl.currency,
            ((p_play_date + v_ov_start) at time zone cl.timezone) as starts_at,
            ((p_play_date + v_ov_start) at time zone cl.timezone) + v_dur as ends_at
-    from volea.clubs cl
-    join volea.courts c on c.club_id = cl.id and c.is_active
+    from public.clubs cl
+    join public.courts c on c.club_id = cl.id and c.is_active
     where cl.status = 'active'
       and (v_pinned is null or cl.id = v_pinned)
       and (v_pinned is not null or lower(cl.city) = lower(v_city))
@@ -140,7 +140,7 @@ begin
       and v_ov_start + v_dur <= cl.closes_at
   ) s
   where not exists (
-    select 1 from volea.matches m
+    select 1 from public.matches m
     where m.court_id = s.court_id
       and m.status <> 'cancelled'
       and m.starts_at < s.ends_at
@@ -153,7 +153,7 @@ begin
     return v_entry;  -- everyone is free but every court is taken; keep waiting
   end if;
 
-  insert into volea.matches
+  insert into public.matches
     (club_id, court_id, mode, starts_at, ends_at, origin, price_total_cents, currency)
   values
     (v_slot.club_id, v_slot.court_id, p_mode, v_slot.starts_at, v_slot.ends_at, 'queue',
@@ -163,11 +163,11 @@ begin
   -- Balanced teams: strongest pairs with weakest (1+4 vs 2+3). Keeps games close.
   select array_agg(q.player_id order by p.rating desc)
     into v_players
-  from volea.queue_entries q
-  join volea.profiles p on p.id = q.player_id
+  from public.queue_entries q
+  join public.profiles p on p.id = q.player_id
   where q.id = any(v_ids || v_entry.id);
 
-  insert into volea.match_players (match_id, player_id, team, rating_before)
+  insert into public.match_players (match_id, player_id, team, rating_before)
   select v_match_id, pid,
          case
            when p_mode = 'singles' then (case when ord = 1 then 1 else 2 end)
@@ -175,32 +175,32 @@ begin
          end,
          pr.rating
   from unnest(v_players) with ordinality as t(pid, ord)
-  join volea.profiles pr on pr.id = t.pid;
+  join public.profiles pr on pr.id = t.pid;
 
-  update volea.queue_entries
+  update public.queue_entries
      set status = 'matched', match_id = v_match_id
    where id = any(v_ids || v_entry.id);
 
-  select * into v_entry from volea.queue_entries where id = v_entry.id;
+  select * into v_entry from public.queue_entries where id = v_entry.id;
   return v_entry;
 end $fn$;
 
-create or replace function volea.leave_queue(p_entry_id uuid)
-returns void language plpgsql security definer set search_path = volea, public as $fn$
+create or replace function public.leave_queue(p_entry_id uuid)
+returns void language plpgsql security definer set search_path = public, pg_temp as $fn$
 begin
-  update volea.queue_entries
+  update public.queue_entries
      set status = 'cancelled'
    where id = p_entry_id and player_id = auth.uid() and status = 'waiting';
 end $fn$;
 
 -- ---------------------------------------------------------------- results & rating
 -- Elo over team averages; every player on a side moves by the same delta.
-create or replace function volea.report_match_result(
+create or replace function public.report_match_result(
   p_match_id     uuid,
   p_winning_team smallint,
   p_score        jsonb default null
 )
-returns void language plpgsql security definer set search_path = volea, public as $fn$
+returns void language plpgsql security definer set search_path = public, pg_temp as $fn$
 declare
   v_k    constant int := 32;
   v_me   uuid := auth.uid();
@@ -210,10 +210,10 @@ declare
   v_d1   int;
   v_d2   int;
 begin
-  if not exists (select 1 from volea.match_players where match_id = p_match_id and player_id = v_me) then
+  if not exists (select 1 from public.match_players where match_id = p_match_id and player_id = v_me) then
     raise exception 'Only players in this match can report its result.' using errcode = '42501';
   end if;
-  if not exists (select 1 from volea.matches where id = p_match_id and status = 'scheduled') then
+  if not exists (select 1 from public.matches where id = p_match_id and status = 'scheduled') then
     raise exception 'This match has already been settled.' using errcode = '22023';
   end if;
   if p_winning_team not in (1, 2) then
@@ -223,52 +223,52 @@ begin
   select avg(pr.rating) filter (where mp.team = 1),
          avg(pr.rating) filter (where mp.team = 2)
     into v_r1, v_r2
-  from volea.match_players mp
-  join volea.profiles pr on pr.id = mp.player_id
+  from public.match_players mp
+  join public.profiles pr on pr.id = mp.player_id
   where mp.match_id = p_match_id;
 
   v_exp1 := 1.0 / (1.0 + power(10.0, (v_r2 - v_r1) / 400.0));
   v_d1   := round(v_k * ((case when p_winning_team = 1 then 1 else 0 end) - v_exp1));
   v_d2   := -v_d1;
 
-  update volea.profiles p
+  update public.profiles p
      set rating         = greatest(100, least(4000, p.rating + case when mp.team = 1 then v_d1 else v_d2 end)),
          matches_played = p.matches_played + 1,
          matches_won    = p.matches_won + case when mp.team = p_winning_team then 1 else 0 end,
          updated_at     = now()
-  from volea.match_players mp
+  from public.match_players mp
   where mp.match_id = p_match_id and mp.player_id = p.id;
 
-  update volea.match_players mp
+  update public.match_players mp
      set rating_after = pr.rating
-  from volea.profiles pr
+  from public.profiles pr
   where mp.match_id = p_match_id and pr.id = mp.player_id;
 
-  update volea.matches
+  update public.matches
      set status = 'completed', winning_team = p_winning_team, score = p_score,
          reported_by = v_me, completed_at = now()
    where id = p_match_id;
 end $fn$;
 
 -- ---------------------------------------------------------------- tournaments
-create or replace function volea.join_tournament(
+create or replace function public.join_tournament(
   p_tournament_id uuid,
   p_team_name     text,
   p_partner_id    uuid default null
 )
-returns volea.tournament_teams
-language plpgsql security definer set search_path = volea, public as $fn$
+returns public.tournament_teams
+language plpgsql security definer set search_path = public, pg_temp as $fn$
 declare
   v_me   uuid := auth.uid();
-  v_t    volea.tournaments;
-  v_team volea.tournament_teams;
+  v_t    public.tournaments;
+  v_team public.tournament_teams;
   v_count int;
 begin
   if v_me is null then
     raise exception 'Sign in to enter a tournament.' using errcode = '28000';
   end if;
 
-  select * into v_t from volea.tournaments where id = p_tournament_id for update;
+  select * into v_t from public.tournaments where id = p_tournament_id for update;
   if v_t.id is null then
     raise exception 'Tournament not found.' using errcode = '22023';
   end if;
@@ -285,24 +285,24 @@ begin
     raise exception 'Pick someone other than yourself as your partner.' using errcode = '22023';
   end if;
 
-  select count(*) into v_count from volea.tournament_teams where tournament_id = p_tournament_id;
+  select count(*) into v_count from public.tournament_teams where tournament_id = p_tournament_id;
   if v_count >= v_t.size then
     raise exception 'This tournament is full.' using errcode = '22023';
   end if;
 
   if p_partner_id is not null and exists (
-      select 1 from volea.tournament_teams
+      select 1 from public.tournament_teams
       where tournament_id = p_tournament_id
         and (player1_id = p_partner_id or player2_id = p_partner_id)) then
     raise exception 'Your partner is already entered with another team.' using errcode = '22023';
   end if;
 
-  insert into volea.tournament_teams (tournament_id, name, player1_id, player2_id)
+  insert into public.tournament_teams (tournament_id, name, player1_id, player2_id)
   values (p_tournament_id, p_team_name, v_me, p_partner_id)
   returning * into v_team;
 
   if v_count + 1 >= v_t.size then
-    update volea.tournaments set status = 'locked' where id = p_tournament_id;
+    update public.tournaments set status = 'locked' where id = p_tournament_id;
   end if;
 
   return v_team;
@@ -310,19 +310,19 @@ end $fn$;
 
 -- Seeds the bracket by rating and creates every round up front, so the UI can
 -- draw the full tree immediately and just fill in names as rounds resolve.
-create or replace function volea.generate_bracket(p_tournament_id uuid)
-returns void language plpgsql security definer set search_path = volea, public as $fn$
+create or replace function public.generate_bracket(p_tournament_id uuid)
+returns void language plpgsql security definer set search_path = public, pg_temp as $fn$
 declare
-  v_t      volea.tournaments;
+  v_t      public.tournaments;
   v_rounds int;
   v_r      int;
   v_slots  int;
 begin
-  select * into v_t from volea.tournaments where id = p_tournament_id for update;
+  select * into v_t from public.tournaments where id = p_tournament_id for update;
   if v_t.id is null then
     raise exception 'Tournament not found.' using errcode = '22023';
   end if;
-  if not exists (select 1 from volea.clubs where id = v_t.club_id and owner_id = auth.uid()) then
+  if not exists (select 1 from public.clubs where id = v_t.club_id and owner_id = auth.uid()) then
     raise exception 'Only the host club can start this tournament.' using errcode = '42501';
   end if;
   if v_t.status = 'live' or v_t.status = 'completed' then
@@ -335,58 +335,58 @@ begin
            row_number() over (
              order by coalesce(p1.rating, 1000) + coalesce(p2.rating, p1.rating, 1000) desc
            ) as seed
-    from volea.tournament_teams tt
-    left join volea.profiles p1 on p1.id = tt.player1_id
-    left join volea.profiles p2 on p2.id = tt.player2_id
+    from public.tournament_teams tt
+    left join public.profiles p1 on p1.id = tt.player1_id
+    left join public.profiles p2 on p2.id = tt.player2_id
     where tt.tournament_id = p_tournament_id
   )
-  update volea.tournament_teams tt set seed = s.seed from seeded s where tt.id = s.id;
+  update public.tournament_teams tt set seed = s.seed from seeded s where tt.id = s.id;
 
-  delete from volea.tournament_matches where tournament_id = p_tournament_id;
+  delete from public.tournament_matches where tournament_id = p_tournament_id;
 
   v_rounds := ceil(log(2, v_t.size));
   v_slots  := v_t.size / 2;
 
   -- round 1: classic 1-vs-N, 2-vs-(N-1) pairing
-  insert into volea.tournament_matches (tournament_id, round, slot, team1_id, team2_id, scheduled_at)
+  insert into public.tournament_matches (tournament_id, round, slot, team1_id, team2_id, scheduled_at)
   select p_tournament_id, 1, g.slot,
-         (select id from volea.tournament_teams where tournament_id = p_tournament_id and seed = g.slot),
-         (select id from volea.tournament_teams where tournament_id = p_tournament_id and seed = v_t.size + 1 - g.slot),
+         (select id from public.tournament_teams where tournament_id = p_tournament_id and seed = g.slot),
+         (select id from public.tournament_teams where tournament_id = p_tournament_id and seed = v_t.size + 1 - g.slot),
          v_t.starts_at
   from generate_series(1, v_slots) as g(slot);
 
   -- empty shells for every later round
   for v_r in 2..v_rounds loop
     v_slots := v_slots / 2;
-    insert into volea.tournament_matches (tournament_id, round, slot)
+    insert into public.tournament_matches (tournament_id, round, slot)
     select p_tournament_id, v_r, g.slot from generate_series(1, v_slots) as g(slot);
   end loop;
 
   -- walk over byes immediately
-  update volea.tournament_matches
+  update public.tournament_matches
      set winner_team_id = team1_id
    where tournament_id = p_tournament_id and round = 1
      and team1_id is not null and team2_id is null;
 
-  update volea.tournaments set status = 'live' where id = p_tournament_id;
+  update public.tournaments set status = 'live' where id = p_tournament_id;
 
   -- push those byes into round 2
-  perform volea.sync_bracket(p_tournament_id);
+  perform public.sync_bracket(p_tournament_id);
 end $fn$;
 
 -- Propagates every decided result into the next round. Idempotent.
-create or replace function volea.sync_bracket(p_tournament_id uuid)
-returns void language plpgsql security definer set search_path = volea, public as $fn$
+create or replace function public.sync_bracket(p_tournament_id uuid)
+returns void language plpgsql security definer set search_path = public, pg_temp as $fn$
 declare
   v_max_round int;
 begin
-  select max(round) into v_max_round from volea.tournament_matches where tournament_id = p_tournament_id;
+  select max(round) into v_max_round from public.tournament_matches where tournament_id = p_tournament_id;
 
   for i in 1..coalesce(v_max_round, 1) - 1 loop
-    update volea.tournament_matches nxt
+    update public.tournament_matches nxt
        set team1_id = case when src.slot % 2 = 1 then src.winner_team_id else nxt.team1_id end,
            team2_id = case when src.slot % 2 = 0 then src.winner_team_id else nxt.team2_id end
-    from volea.tournament_matches src
+    from public.tournament_matches src
     where src.tournament_id = p_tournament_id
       and src.round = i
       and src.winner_team_id is not null
@@ -395,26 +395,26 @@ begin
       and nxt.slot = ceil(src.slot / 2.0);
   end loop;
 
-  update volea.tournaments t
+  update public.tournaments t
      set champion_team_id = f.winner_team_id,
          status = 'completed'
-  from volea.tournament_matches f
+  from public.tournament_matches f
   where f.tournament_id = p_tournament_id
     and f.round = v_max_round
     and f.winner_team_id is not null
     and t.id = p_tournament_id;
 end $fn$;
 
-create or replace function volea.report_tournament_result(
+create or replace function public.report_tournament_result(
   p_tournament_match_id uuid,
   p_winner_team_id      uuid,
   p_score               jsonb default null
 )
-returns void language plpgsql security definer set search_path = volea, public as $fn$
+returns void language plpgsql security definer set search_path = public, pg_temp as $fn$
 declare
-  v_tm volea.tournament_matches;
+  v_tm public.tournament_matches;
 begin
-  select * into v_tm from volea.tournament_matches where id = p_tournament_match_id for update;
+  select * into v_tm from public.tournament_matches where id = p_tournament_match_id for update;
   if v_tm.id is null then
     raise exception 'Bracket match not found.' using errcode = '22023';
   end if;
@@ -425,35 +425,35 @@ begin
 
   -- the host club, or any player in the tie, may report
   if not exists (
-    select 1 from volea.tournaments t
-    join volea.clubs c on c.id = t.club_id
+    select 1 from public.tournaments t
+    join public.clubs c on c.id = t.club_id
     where t.id = v_tm.tournament_id and c.owner_id = auth.uid()
   ) and not exists (
-    select 1 from volea.tournament_teams tt
+    select 1 from public.tournament_teams tt
     where tt.id in (v_tm.team1_id, v_tm.team2_id)
       and auth.uid() in (tt.player1_id, tt.player2_id)
   ) then
     raise exception 'Only the host club or a player in this tie can report it.' using errcode = '42501';
   end if;
 
-  update volea.tournament_matches
+  update public.tournament_matches
      set winner_team_id = p_winner_team_id, score = p_score
    where id = p_tournament_match_id;
 
-  perform volea.sync_bracket(v_tm.tournament_id);
+  perform public.sync_bracket(v_tm.tournament_id);
 end $fn$;
 
 -- ---------------------------------------------------------------- club analytics
 -- One round trip for the owner dashboard.
-create or replace function volea.club_stats(p_club_id uuid, p_days int default 30)
-returns jsonb language plpgsql security definer set search_path = volea, public as $fn$
+create or replace function public.club_stats(p_club_id uuid, p_days int default 30)
+returns jsonb language plpgsql security definer set search_path = public, pg_temp as $fn$
 declare
   v_from  timestamptz := now() - make_interval(days => p_days);
-  v_club  volea.clubs;
+  v_club  public.clubs;
   v_courts int;
   v_out   jsonb;
 begin
-  select * into v_club from volea.clubs where id = p_club_id;
+  select * into v_club from public.clubs where id = p_club_id;
   if v_club.id is null then
     raise exception 'Club not found.' using errcode = '22023';
   end if;
@@ -461,15 +461,15 @@ begin
     raise exception 'You do not manage this club.' using errcode = '42501';
   end if;
 
-  select count(*) into v_courts from volea.courts where club_id = p_club_id and is_active;
+  select count(*) into v_courts from public.courts where club_id = p_club_id and is_active;
 
   with m as (
-    select * from volea.matches
+    select * from public.matches
     where club_id = p_club_id and starts_at >= v_from and status <> 'cancelled'
   ),
   players as (
     select mp.player_id, count(*) as plays, max(m.starts_at) as last_seen
-    from m join volea.match_players mp on mp.match_id = m.id
+    from m join public.match_players mp on mp.match_id = m.id
     group by mp.player_id
   )
   select jsonb_build_object(
@@ -502,7 +502,7 @@ begin
     'top_players',     (
       select coalesce(jsonb_agg(x), '[]'::jsonb) from (
         select pr.username, pr.full_name, pr.avatar_url, pr.level, pl.plays::int, pl.last_seen
-        from players pl join volea.profiles pr on pr.id = pl.player_id
+        from players pl join public.profiles pr on pr.id = pl.player_id
         order by pl.plays desc limit 10
       ) x)
   ) into v_out;
@@ -511,7 +511,7 @@ begin
 end $fn$;
 
 -- ---------------------------------------------------------------- leaderboard
-create or replace view volea.leaderboard
+create or replace view public.leaderboard
 with (security_invoker = on) as
 select p.id, p.username, p.full_name, p.avatar_url, p.city, p.country,
        p.rating, p.level, p.matches_played, p.matches_won,
@@ -520,61 +520,78 @@ select p.id, p.username, p.full_name, p.avatar_url, p.city, p.country,
             else 0 end as win_pct,
        rank() over (partition by lower(p.city) order by p.rating desc, p.matches_won desc) as city_rank,
        rank() over (order by p.rating desc, p.matches_won desc) as global_rank
-from volea.profiles p
+from public.profiles p
 where p.matches_played > 0;
 
 -- ---------------------------------------------------------------- RLS
-alter table volea.profiles           enable row level security;
-alter table volea.clubs              enable row level security;
-alter table volea.courts             enable row level security;
-alter table volea.matches            enable row level security;
-alter table volea.match_players      enable row level security;
-alter table volea.queue_entries      enable row level security;
-alter table volea.tournaments        enable row level security;
-alter table volea.tournament_teams   enable row level security;
-alter table volea.tournament_matches enable row level security;
+alter table public.profiles           enable row level security;
+alter table public.clubs              enable row level security;
+alter table public.courts             enable row level security;
+alter table public.matches            enable row level security;
+alter table public.match_players      enable row level security;
+alter table public.queue_entries      enable row level security;
+alter table public.tournaments        enable row level security;
+alter table public.tournament_teams   enable row level security;
+alter table public.tournament_matches enable row level security;
 
-create policy profiles_read   on volea.profiles for select using (true);
-create policy profiles_insert on volea.profiles for insert with check (auth.uid() = id);
-create policy profiles_update on volea.profiles for update using (auth.uid() = id) with check (auth.uid() = id);
+create policy profiles_read   on public.profiles for select using (true);
+create policy profiles_insert on public.profiles for insert with check (auth.uid() = id);
+create policy profiles_update on public.profiles for update using (auth.uid() = id) with check (auth.uid() = id);
 
-create policy clubs_read   on volea.clubs for select using (status = 'active' or owner_id = auth.uid());
-create policy clubs_insert on volea.clubs for insert with check (auth.uid() = owner_id);
-create policy clubs_update on volea.clubs for update using (auth.uid() = owner_id) with check (auth.uid() = owner_id);
-create policy clubs_delete on volea.clubs for delete using (auth.uid() = owner_id);
+create policy clubs_read   on public.clubs for select using (status = 'active' or owner_id = auth.uid());
+create policy clubs_insert on public.clubs for insert with check (auth.uid() = owner_id);
+create policy clubs_update on public.clubs for update using (auth.uid() = owner_id) with check (auth.uid() = owner_id);
+create policy clubs_delete on public.clubs for delete using (auth.uid() = owner_id);
 
-create policy courts_read  on volea.courts for select using (true);
-create policy courts_write on volea.courts for all
-  using (exists (select 1 from volea.clubs c where c.id = club_id and c.owner_id = auth.uid()))
-  with check (exists (select 1 from volea.clubs c where c.id = club_id and c.owner_id = auth.uid()));
+create policy courts_read  on public.courts for select using (true);
+create policy courts_write on public.courts for all
+  using (exists (select 1 from public.clubs c where c.id = club_id and c.owner_id = auth.uid()))
+  with check (exists (select 1 from public.clubs c where c.id = club_id and c.owner_id = auth.uid()));
 
 -- Match history is public (it is what a leaderboard and a profile are made of).
 -- Writes only ever happen through the security-definer functions above.
-create policy matches_read on volea.matches for select using (true);
-create policy match_players_read on volea.match_players for select using (true);
+create policy matches_read on public.matches for select using (true);
+create policy match_players_read on public.match_players for select using (true);
 
 -- A queue entry is private: you see your own, the matcher sees everyone.
-create policy queue_read   on volea.queue_entries for select using (auth.uid() = player_id);
-create policy queue_insert on volea.queue_entries for insert with check (auth.uid() = player_id);
-create policy queue_update on volea.queue_entries for update using (auth.uid() = player_id);
+create policy queue_read   on public.queue_entries for select using (auth.uid() = player_id);
+create policy queue_insert on public.queue_entries for insert with check (auth.uid() = player_id);
+create policy queue_update on public.queue_entries for update using (auth.uid() = player_id);
 
-create policy tournaments_read  on volea.tournaments for select using (true);
-create policy tournaments_write on volea.tournaments for all
-  using (exists (select 1 from volea.clubs c where c.id = club_id and c.owner_id = auth.uid()))
-  with check (exists (select 1 from volea.clubs c where c.id = club_id and c.owner_id = auth.uid()));
+create policy tournaments_read  on public.tournaments for select using (true);
+create policy tournaments_write on public.tournaments for all
+  using (exists (select 1 from public.clubs c where c.id = club_id and c.owner_id = auth.uid()))
+  with check (exists (select 1 from public.clubs c where c.id = club_id and c.owner_id = auth.uid()));
 
-create policy tteams_read   on volea.tournament_teams for select using (true);
-create policy tteams_delete on volea.tournament_teams for delete
+create policy tteams_read   on public.tournament_teams for select using (true);
+create policy tteams_delete on public.tournament_teams for delete
   using (auth.uid() in (player1_id, player2_id));
 
-create policy tmatches_read on volea.tournament_matches for select using (true);
+create policy tmatches_read on public.tournament_matches for select using (true);
 
 -- ---------------------------------------------------------------- grants
-grant usage on schema volea to anon, authenticated, service_role;
-grant select on all tables in schema volea to anon, authenticated, service_role;
-grant insert, update, delete on volea.profiles, volea.clubs, volea.courts,
-      volea.queue_entries, volea.tournaments, volea.tournament_teams
+grant usage on schema public to anon, authenticated, service_role;
+grant select on all tables in schema public to anon, authenticated, service_role;
+grant insert, update, delete on public.profiles, public.clubs, public.courts,
+      public.queue_entries, public.tournaments, public.tournament_teams
       to authenticated;
-grant execute on all functions in schema volea to anon, authenticated, service_role;
-alter default privileges in schema volea grant select on tables to anon, authenticated, service_role;
-alter default privileges in schema volea grant execute on functions to anon, authenticated, service_role;
+grant execute on all functions in schema public to anon, authenticated, service_role;
+alter default privileges in schema public grant select on tables to anon, authenticated, service_role;
+alter default privileges in schema public grant execute on functions to anon, authenticated, service_role;
+
+-- ---------------------------------------------------------------- queue pulse
+-- How many players are waiting, without leaking who they are. A waiting room
+-- that looks empty is the fastest way to make matchmaking feel broken.
+create or replace function public.queue_pulse(p_play_date date, p_city text)
+returns int language sql security definer stable
+set search_path = public, pg_temp as $fn$
+  select count(*)::int from public.queue_entries
+  where status = 'waiting' and play_date = p_play_date and lower(city) = lower(p_city);
+$fn$;
+grant execute on function public.queue_pulse(date, text) to anon, authenticated;
+
+-- ---------------------------------------------------------------- realtime
+-- The waiting room subscribes to its own queue row and refreshes the instant
+-- the matcher claims it.
+alter publication supabase_realtime add table public.queue_entries;
+alter publication supabase_realtime add table public.matches;
