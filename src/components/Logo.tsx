@@ -1,0 +1,46 @@
+import { cn } from "@/lib/format";
+
+/** The Volea mark: a padel racket face with the V cut out, ball mid-volley. */
+export function Logomark({ size = 28, className }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 64 64"
+      fill="none"
+      className={className}
+      role="img"
+      aria-label="Volea"
+    >
+      <defs>
+        <linearGradient id="vmFace" x1="10" y1="6" x2="54" y2="58" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#2BE8B6" />
+          <stop offset="1" stopColor="#0E9E86" />
+        </linearGradient>
+      </defs>
+      <path
+        fill="url(#vmFace)"
+        d="M32 3c15 0 25 10.5 25 24 0 11.6-7.4 20.4-17.9 23.2L36.6 59a4.8 4.8 0 0 1-9.2 0l-2.5-8.8C14.4 47.4 7 38.6 7 27 7 13.5 17 3 32 3Z"
+      />
+      <path fill="#070E10" d="M20.4 15h7.1l4.5 15.1L36.5 15h7.1L35.6 40h-7.2L20.4 15Z" />
+      <circle cx="32" cy="45.5" r="2.05" fill="#070E10" opacity=".55" />
+      <circle cx="23.6" cy="44" r="1.7" fill="#070E10" opacity=".35" />
+      <circle cx="40.4" cy="44" r="1.7" fill="#070E10" opacity=".35" />
+      <circle cx="49.5" cy="13.5" r="6.5" fill="#D7FF3E" stroke="#070E10" strokeWidth="2" />
+    </svg>
+  );
+}
+
+export function Logo({ className, size = 26 }: { className?: string; size?: number }) {
+  return (
+    <span className={cn("inline-flex items-center gap-2", className)}>
+      <Logomark size={size} />
+      <span
+        className="text-[1.15rem] font-extrabold tracking-tight text-chalk-100"
+        style={{ letterSpacing: "-0.02em" }}
+      >
+        Volea
+      </span>
+    </span>
+  );
+}

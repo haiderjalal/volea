@@ -1,26 +1,98 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------- Volea tokens
+   Dark-only by design: padel is a floodlit, after-work sport and the brand
+   lives at night. Every colour is a token — never hardcode a hex in a component. */
+@theme {
+  --color-court-950: #060C0E;
+  --color-court-900: #0A1316;
+  --color-court-850: #0E191C;
+  --color-court-800: #132328;
+  --color-court-700: #1C2F34;
+  --color-court-600: #2A454C;
+
+  --color-ball-400: #E3FF6E;
+  --color-ball-500: #D7FF3E;
+  --color-ball-600: #B9E01F;
+
+  --color-teal-400: #2BE8B6;
+  --color-teal-500: #14C79C;
+  --color-teal-600: #0E9E86;
+
+  --color-chalk-100: #F2F7F5;
+  --color-chalk-300: #C3D4D1;
+  --color-chalk-500: #8AA5A2;
+  --color-chalk-600: #6B8582;
+
+  --color-flag-red: #FF6B6B;
+  --color-flag-amber: #FFC65C;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 1rem;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-court-950);
+  color: var(--color-chalk-100);
+  /* floodlights bleeding in from the corners of the court */
+  background-image:
+    radial-gradient(70rem 40rem at 12% -10%, rgb(20 199 156 / 0.10), transparent 60%),
+    radial-gradient(50rem 32rem at 95% 0%, rgb(215 255 62 / 0.06), transparent 55%);
+  background-attachment: fixed;
+  min-height: 100dvh;
+}
+
+/* Keyboard users must always be able to see where they are. */
+:focus-visible {
+  outline: 2px solid var(--color-ball-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Leaflet renders a white canvas by default — sink it into the court palette. */
+.leaflet-container {
+  background: var(--color-court-900);
+  font-family: var(--font-sans);
+}
+.leaflet-tile {
+  filter: invert(1) hue-rotate(180deg) brightness(0.86) contrast(0.92) saturate(0.7);
+}
+.leaflet-control-attribution {
+  background: rgb(6 12 14 / 0.8) !important;
+  color: var(--color-chalk-600) !important;
+  font-size: 10px !important;
+}
+.leaflet-control-attribution a {
+  color: var(--color-chalk-500) !important;
+}
+.leaflet-bar a {
+  background: var(--color-court-850) !important;
+  color: var(--color-chalk-100) !important;
+  border-color: var(--color-court-700) !important;
+}
+
+/* Thin, unobtrusive scrollbars that match the surface. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-court-700) transparent;
 }
