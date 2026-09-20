@@ -1,0 +1,253 @@
+import Link from "next/link";
+import { Building2, Plus } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import { PeakHours, RevenueTrend } from "@/features/club/Insights";
+import { NewTournament } from "@/features/club/NewTournament";
+import {
+  Avatar,
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  SectionHeading,
+  Stat,
+} from "@/components/ui";
+import { formatMoney, formatSlot } from "@/lib/format";
+import type { Club, ClubStats, Court, Tournament } from "@/lib/types";
+
+export const metadata = {
+  title: "Club dashboard",
+  robots: { index: false, follow: false },
+};
+
+const RANGES = [7, 30, 90] as const;
+
+export default async function ClubDashboard({
+  searchParams,
+}: {
+  searchParams: Promise<{ days?: string }>;
+}) {
+  const { days: daysParam } = await searchParams;
+  const days = RANGES.includes(Number(daysParam) as 7 | 30 | 90)
+    ? Number(daysParam)
+    : 30;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data: club } = await supabase
+    .from("clubs")
+    .select("*")
+    .eq("owner_id", user.id)
+    .order("created_at")
+    .limit(1)
+    .maybeSingle<Club>();
+
+  if (!club) {
+    return (
+      <div className="mx-auto max-w-lg py-8">
+        <EmptyState
+          icon={<Building2 size={30} />}
+          title="You do not manage a club yet"
+          body="Register your venue to appear on the map, take matchmade bookings and see how your courts are performing."
+          action={
+            <Link href="/club/new">
+              <Button>Register your club</Button>
+            </Link>
+          }
+        />
+      </div>
+    );
+  }
+
+  const [{ data: rawStats }, { data: courts }, { data: tournaments }] = await Promise.all([
+    supabase.rpc("club_stats", { p_club_id: club.id, p_days: days }),
+    supabase
+      .from("courts")
+      .select("*")
+      .eq("club_id", club.id)
+      .order("name")
+      .returns<Court[]>(),
+    supabase
+      .from("tournaments")
+      .select("*")
+      .eq("club_id", club.id)
+      .order("starts_at", { ascending: false })
+      .returns<Tournament[]>(),
+  ]);
+
+  const stats = rawStats as ClubStats | null;
+
+  if (!stats) {
+    return (
+      <Card className="p-6">
+        <p className="text-sm text-chalk-400">We could not load this club&apos;s numbers.</p>
+      </Card>
+    );
+  }
+
+  const repeatRate =
+    stats.unique_players > 0
+      ? Math.round((stats.repeat_players / stats.unique_players) * 100)
+      : 0;
+
+  return (
+    <div className="mx-auto max-w-3xl space-y-8">
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight text-chalk-100">
+            {club.name}
+          </h1>
+          <p className="mt-1 text-sm text-chalk-500">
+            {club.city} · {stats.courts} court{stats.courts === 1 ? "" : "s"} ·{" "}
+            {formatMoney(club.price_per_hour_cents, club.currency)}/hour
+          </p>
+        </div>
+        <Link href={`/clubs/${club.slug}`}>
+          <Button variant="outline" size="sm">
+            View public page
+          </Button>
+        </Link>
+      </header>
+
+      <nav aria-label="Date range" className="flex gap-2">
+        {RANGES.map((r) => (
+          <Link
+            key={r}
+            href={`/club?days=${r}`}
+            className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
+              days === r
+                ? "bg-ball-500 text-court-950"
+                : "border border-court-700 text-chalk-400 hover:border-court-600"
+            }`}
+          >
+            {r} days
+          </Link>
+        ))}
+      </nav>
+
+      <section>
+        <SectionHeading title="Performance" />
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <Stat
+            label="Revenue"
+            value={formatMoney(stats.revenue_cents, stats.currency)}
+            sub={`${stats.matches} booking${stats.matches === 1 ? "" : "s"}`}
+          />
+          <Stat
+            label="Occupancy"
+            value={`${stats.occupancy_pct}%`}
+            sub={`${stats.hours_played} court hours`}
+          />
+          <Stat
+            label="Players"
+            value={stats.unique_players}
+            sub={`${repeatRate}% came back`}
+          />
+          <Stat
+            label="Scored"
+            value={`${stats.completed}/${stats.matches}`}
+            sub="Results reported"
+          />
+        </div>
+      </section>
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <PeakHours stats={stats} opensAt={club.opens_at} closesAt={club.closes_at} />
+        <RevenueTrend stats={stats} />
+      </div>
+
+      <section>
+        <SectionHeading title="Your regulars" />
+        {stats.top_players.length === 0 ? (
+          <EmptyState
+            title="No players yet"
+            body="Once Volea matches players onto your courts they show up here, most frequent first."
+          />
+        ) : (
+          <Card className="divide-y divide-court-700/60 p-0">
+            <ul>
+              {stats.top_players.map((p) => (
+                <li key={p.username}>
+                  <Link
+                    href={`/players/${p.username}`}
+                    className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-court-800/50"
+                  >
+                    <Avatar name={p.full_name} src={p.avatar_url} size={34} />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium text-chalk-200">
+                        {p.full_name}
+                      </span>
+                      <span className="block text-xs text-chalk-600">
+                        last played {formatSlot(p.last_seen, club.timezone)}
+                      </span>
+                    </span>
+                    <Badge tone="teal">
+                      {p.plays} visit{p.plays === 1 ? "" : "s"}
+                    </Badge>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
+      </section>
+
+      <section>
+        <SectionHeading title={`Courts (${courts?.length ?? 0})`} />
+        <Card className="p-4">
+          <ul className="flex flex-wrap gap-2">
+            {(courts ?? []).map((c) => (
+              <li key={c.id}>
+                <Badge tone={c.is_active ? "neutral" : "red"}>
+                  {c.name}
+                  {c.indoor ? " · indoor" : ""}
+                </Badge>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      </section>
+
+      <section>
+        <SectionHeading title="Tournaments" />
+        <div className="space-y-3">
+          {(tournaments ?? []).length > 0 ? (
+            <Card className="divide-y divide-court-700/60 p-0">
+              <ul>
+                {(tournaments ?? []).map((t) => (
+                  <li key={t.id}>
+                    <Link
+                      href={`/tournaments/${t.slug}`}
+                      className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-court-800/50"
+                    >
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium text-chalk-200">
+                          {t.name}
+                        </span>
+                        <span className="block text-xs text-chalk-600">
+                          {formatSlot(t.starts_at, club.timezone)} · {t.size} teams
+                        </span>
+                      </span>
+                      <Badge className="capitalize">{t.status}</Badge>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          ) : null}
+          <NewTournament clubId={club.id} currency={club.currency} />
+        </div>
+      </section>
+
+      <p className="flex items-center gap-2 text-xs text-chalk-600">
+        <Plus size={13} aria-hidden="true" />
+        Revenue is a snapshot taken when each match is booked, so changing your hourly
+        price never rewrites past numbers.
+      </p>
+    </div>
+  );
+}
