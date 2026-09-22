@@ -36,7 +36,7 @@ export function ReportResult({ matchId }: { matchId: string }) {
     return (
       <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
         <ClipboardCheck size={14} aria-hidden="true" />
-        Report result
+        Record result
       </Button>
     );
   }
@@ -47,7 +47,7 @@ export function ReportResult({ matchId }: { matchId: string }) {
       <input type="hidden" name="winning_team" value={team} />
 
       <fieldset>
-        <legend className="text-sm font-medium text-bone-300">Who won?</legend>
+        <legend className="text-sm font-medium text-bone-300">Which team won?</legend>
         <div className="mt-2 grid grid-cols-2 gap-2">
           {([1, 2] as const).map((t) => (
             <button
@@ -67,7 +67,7 @@ export function ReportResult({ matchId }: { matchId: string }) {
         </div>
       </fieldset>
 
-      <Field label="Score" hint="Set by set, from Team 1's side. For example 6-4, 6-3.">
+      <Field label="Score" hint="Set by set from Team 1's side, e.g. 6-4, 6-3.">
         <Input name="sets" required placeholder="6-4, 6-3" />
       </Field>
 

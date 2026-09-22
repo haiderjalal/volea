@@ -3,6 +3,9 @@ import { Building2, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { PeakHours, RevenueTrend } from "@/features/club/Insights";
 import { NewTournament } from "@/features/club/NewTournament";
+import { MatchCard } from "@/features/matches/MatchCard";
+import { ReportResult } from "@/features/matches/ReportResult";
+import { getClubMatchesAwaitingResult } from "@/features/matches/queries";
 import {
   Avatar,
   Badge,
@@ -63,6 +66,8 @@ export default async function ClubDashboard({
     );
   }
 
+  const pending = await getClubMatchesAwaitingResult(supabase, club.id);
+
   const [{ data: rawStats }, { data: courts }, { data: tournaments }] = await Promise.all([
     supabase.rpc("club_stats", { p_club_id: club.id, p_days: days }),
     supabase
@@ -112,6 +117,23 @@ export default async function ClubDashboard({
           </Button>
         </Link>
       </header>
+
+      {pending.length > 0 ? (
+        <section>
+          <SectionHeading title={`Results to record (${pending.length})`} />
+          <ul className="space-y-4">
+            {pending.map((m) => (
+              <li key={m.id}>
+                <MatchCard match={m} action={<ReportResult matchId={m.id} />} />
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-xs leading-relaxed text-bone-600">
+            Only you can record these. Players cannot score their own matches, and
+            nobody&apos;s level moves until the result is in.
+          </p>
+        </section>
+      ) : null}
 
       <nav aria-label="Date range" className="flex gap-2">
         {RANGES.map((r) => (

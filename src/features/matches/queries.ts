@@ -40,6 +40,27 @@ export async function getPlayerMatches(
   return data ?? [];
 }
 
+/**
+ * Matches at a club that have finished but carry no score. This is the club's
+ * queue of work — until it is cleared, nobody in those matches has a level that
+ * reflects reality.
+ */
+export async function getClubMatchesAwaitingResult(
+  supabase: VoleaClient,
+  clubId: string,
+): Promise<Match[]> {
+  const { data } = await supabase
+    .from("matches")
+    .select(MATCH_SELECT)
+    .eq("club_id", clubId)
+    .eq("status", "scheduled")
+    .lt("ends_at", new Date().toISOString())
+    .order("starts_at", { ascending: false })
+    .limit(30)
+    .returns<Match[]>();
+  return data ?? [];
+}
+
 export interface MatchBuckets {
   upcoming: Match[];
   /** Played, but nobody has entered a score — these hold up everyone's rating. */
