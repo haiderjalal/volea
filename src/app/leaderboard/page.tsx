@@ -22,7 +22,7 @@ export default async function LeaderboardPage({
   const supabase = await createClient();
 
   const [{ data: cityRows }, { data: rows }] = await Promise.all([
-    supabase.from("clubs").select("city").eq("status", "active"),
+    supabase.from("leaderboard").select("city").not("city", "is", null),
     (city
       ? supabase.from("leaderboard").select("*").ilike("city", city).order("city_rank")
       : supabase.from("leaderboard").select("*").order("global_rank")

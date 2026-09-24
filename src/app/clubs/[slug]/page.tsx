@@ -4,9 +4,22 @@ import type { Metadata } from "next";
 import { Clock, MapPin, Phone, Trophy } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { ClubMapPanel } from "@/features/courts/ClubMapPanel";
+import { CourtCalendar } from "@/features/courts/CourtCalendar";
 import { Badge, Button, Card, SectionHeading, Stat } from "@/components/ui";
 import { formatClock, formatMoney, formatSlot } from "@/lib/format";
-import type { Club, Court, Tournament } from "@/lib/types";
+import type { CalendarBooking, Club, Court, Tournament } from "@/lib/types";
+
+function dateInZone(timeZone: string): string {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? "00";
+  return `${get("year")}-${get("month")}-${get("day")}`;
+}
 
 async function loadClub(slug: string): Promise<Club | null> {
   const supabase = await createClient();
@@ -51,7 +64,10 @@ export default async function ClubPage({
   if (!club) notFound();
 
   const supabase = await createClient();
-  const [{ data: courts }, { data: tournaments }] = await Promise.all([
+  const horizonDate = new Date();
+  horizonDate.setUTCDate(horizonDate.getUTCDate() + 8);
+  const horizon = horizonDate.toISOString();
+  const [{ data: courts }, { data: tournaments }, { data: bookings }, { data: auth }] = await Promise.all([
     supabase
       .from("courts")
       .select("*")
@@ -66,6 +82,16 @@ export default async function ClubPage({
       .in("status", ["open", "locked", "live"])
       .order("starts_at")
       .returns<Tournament[]>(),
+    supabase
+      .from("matches")
+      .select("id, court_id, starts_at, ends_at, status, origin, booked_by")
+      .eq("club_id", club.id)
+      .neq("status", "cancelled")
+      .gte("ends_at", new Date().toISOString())
+      .lt("starts_at", horizon)
+      .order("starts_at")
+      .returns<CalendarBooking[]>(),
+    supabase.auth.getUser(),
   ]);
 
   const indoor = (courts ?? []).filter((c) => c.indoor).length;
@@ -160,6 +186,23 @@ export default async function ClubPage({
       <Card className="overflow-hidden p-0">
         <ClubMapPanel club={club} />
       </Card>
+
+      <section>
+        <SectionHeading title="Court calendar & booking" />
+        <p className="-mt-2 mb-5 text-sm text-bone-500">
+          Every scheduled match is shown here. Choose any open 90-minute slot to reserve it.
+        </p>
+        <CourtCalendar
+          courts={courts ?? []}
+          bookings={bookings ?? []}
+          opensAt={club.opens_at}
+          closesAt={club.closes_at}
+          timeZone={club.timezone}
+          startDate={dateInZone(club.timezone)}
+          clubSlug={club.slug}
+          signedIn={Boolean(auth.user)}
+        />
+      </section>
 
       {tournaments && tournaments.length > 0 ? (
         <section>

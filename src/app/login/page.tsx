@@ -38,6 +38,12 @@ export default async function LoginPage({
           Create a profile
         </Link>
       </p>
+      <p className="mt-3 text-center text-xs text-bone-600">
+        Manage a venue?{" "}
+        <Link href="/club/login" className="font-semibold text-court-300 hover:underline">
+          Club owner sign in
+        </Link>
+      </p>
     </div>
   );
 }

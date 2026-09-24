@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MapPin, Swords, CalendarDays, Trophy, User } from "lucide-react";
+import { MapPin, Swords, CalendarDays, Trophy, User, MessagesSquare } from "lucide-react";
 import { cn } from "@/lib/format";
 
 const ITEMS = [
   { href: "/", label: "Courts", icon: MapPin },
   { href: "/play", label: "Play", icon: Swords },
   { href: "/matches", label: "Matches", icon: CalendarDays },
+  { href: "/community", label: "Chat", icon: MessagesSquare },
   { href: "/leaderboard", label: "Ranks", icon: Trophy },
   { href: "/me", label: "Me", icon: User },
 ] as const;
@@ -22,7 +23,7 @@ export function BottomNav() {
       className="fixed inset-x-0 bottom-0 z-40 border-t border-ink-700/70 bg-ink-950/90 backdrop-blur-xl md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <ul className="mx-auto grid max-w-lg grid-cols-5">
+      <ul className="mx-auto grid max-w-xl grid-cols-6">
         {ITEMS.map(({ href, label, icon: Icon }) => {
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
           return (

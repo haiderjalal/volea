@@ -14,13 +14,22 @@ function Submit({ label }: { label: string }) {
   );
 }
 
-export function AuthForm({ mode, next }: { mode: "signin" | "signup"; next?: string }) {
+export function AuthForm({
+  mode,
+  next,
+  accountType = "player",
+}: {
+  mode: "signin" | "signup";
+  next?: string;
+  accountType?: "player" | "club_owner";
+}) {
   const action = mode === "signin" ? signIn : signUp;
   const [state, formAction] = useActionState<AuthState, FormData>(action, {});
 
   return (
     <form action={formAction} className="space-y-4">
       {next ? <input type="hidden" name="next" value={next} /> : null}
+      <input type="hidden" name="account_type" value={accountType} />
 
       {mode === "signup" ? (
         <>
@@ -73,7 +82,17 @@ export function AuthForm({ mode, next }: { mode: "signin" | "signup"; next?: str
         </p>
       ) : null}
 
-      <Submit label={mode === "signin" ? "Sign in" : "Create profile"} />
+      <Submit
+        label={
+          mode === "signin"
+            ? accountType === "club_owner"
+              ? "Open owner dashboard"
+              : "Sign in"
+            : accountType === "club_owner"
+              ? "Create owner account"
+              : "Create profile"
+        }
+      />
     </form>
   );
 }

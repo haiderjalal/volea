@@ -24,7 +24,13 @@ const signUpSchema = credentials.extend({
     .toLowerCase()
     .regex(/^[a-z0-9_]{3,20}$/, "3–20 characters: letters, numbers and underscores."),
   city: z.string().trim().min(2, "We match players city by city, so we need yours."),
+  account_type: z.enum(["player", "club_owner"]).default("player"),
 });
+
+function safeNext(value: FormDataEntryValue | null, fallback: string): string {
+  const next = String(value || fallback);
+  return next.startsWith("/") && !next.startsWith("//") ? next : fallback;
+}
 
 function firstError(error: z.ZodError): string {
   return error.issues[0]?.message ?? "Please check the form.";
@@ -38,7 +44,7 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) return { error: "That email and password do not match an account." };
 
-  const next = String(formData.get("next") || "/play");
+  const next = safeNext(formData.get("next"), "/play");
   revalidatePath("/", "layout");
   redirect(next);
 }
@@ -47,8 +53,9 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   const parsed = signUpSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: firstError(parsed.error) };
 
-  const { email, password, full_name, username, city } = parsed.data;
+  const { email, password, full_name, username, city, account_type } = parsed.data;
   const supabase = await createClient();
+  const destination = account_type === "club_owner" ? "/club/new" : "/play";
 
   // Usernames are public identity — reject duplicates before creating the auth user.
   const { data: taken } = await supabase
@@ -62,8 +69,10 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
     email,
     password,
     options: {
-      data: { full_name, username, city },
-      emailRedirectTo: absoluteUrl("/auth/callback"),
+      data: { full_name, username, city, account_type },
+      emailRedirectTo: absoluteUrl(
+        `/auth/callback?next=${encodeURIComponent(destination)}`,
+      ),
     },
   });
 
@@ -81,7 +90,7 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   }
 
   revalidatePath("/", "layout");
-  redirect("/play");
+  redirect(destination);
 }
 
 export async function signOut(): Promise<void> {

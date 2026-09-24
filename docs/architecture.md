@@ -39,6 +39,8 @@ with the result) and `generate_bracket` (seeding and byes must be one step).
 | `report_tournament_result` | Record a tie, then re-sync |
 | `club_stats` | The whole owner dashboard in one round trip |
 | `queue_pulse` | How many players are waiting, without leaking who |
+| `book_court` | Validate opening hours and atomically reserve one 90-minute court slot |
+| `cancel_direct_booking` | Let the organiser or host club release a future direct booking |
 
 ## Matching, precisely
 
@@ -122,3 +124,20 @@ dance.
 `queue_entries` and `matches` are in the `supabase_realtime` publication. The waiting room subscribes to its own row and refreshes the instant
 the matcher claims it. A 20-second poll sits behind it, because mobile sockets
 drop and a stuck waiting screen is the one failure players will not forgive.
+
+`community_messages` is the durable seven-day lobby history. The sender renders
+optimistically, connected peers receive an authorized Broadcast, and Postgres
+Changes is the durable fallback. Online state uses the same private Presence
+channel, authorized for signed-in users through policies on `realtime.messages`.
+
+## Booking calendar
+
+Direct reservations and matchmade games both live in `matches`; a second booking
+table would make availability eventually inconsistent. A per-court advisory lock
+in `matches_prevent_overlap` serializes concurrent writes, then checks the full
+time range—not just identical start times. Public calendars expose occupied slots
+without player identity; the owner calendar adds the roster.
+
+Community messages are hidden immediately at seven days by RLS and physically
+pruned hourly by `pg_cron`. A statement trigger performs the same cleanup on every
+write, so retention remains correct in local environments where cron is absent.

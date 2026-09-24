@@ -26,6 +26,8 @@ FourthPlayer](https://fourthplayer.io/)). Most apps solve booking *or* matchmaki
 - Knockout tournaments, seeded by level
 - Profiles with your record, your regular partners and who you win with
 - Regional and global leaderboards
+- Realtime community room with online presence and seven-day message retention
+- Public per-court calendars and collision-safe 90-minute reservations
 
 **For club owners**
 - Revenue, occupancy, court-hours and booking counts over 7 / 30 / 90 days
@@ -33,6 +35,8 @@ FourthPlayer](https://fourthplayer.io/)). Most apps solve booking *or* matchmaki
   slots worth discounting are the obvious ones
 - Your regulars, ranked by visits, with last-seen dates
 - Host tournaments and run the bracket
+- A live seven-day court calendar with player names and every direct/matchmade booking
+- Owner-only result entry, which automatically updates city and global rankings
 
 ## Stack
 
@@ -68,6 +72,7 @@ Sources, which are what you edit:
 ```
 supabase/migrations/0001_init.sql     # tables, types, indexes
 supabase/migrations/0002_engine.sql   # matchmaker, Elo, brackets, analytics, RLS
+supabase/migrations/0005_community_bookings_and_owner_accounts.sql # chat, booking, presence
 supabase/seed.sql                     # demo clubs and courts
 supabase/tests/matchmaking.test.sql   # the self-check
 ```
@@ -79,6 +84,9 @@ psql "$DATABASE_URL" -f supabase/tests/matchmaking.test.sql
 ```
 
 It raises on failure and cleans up after itself, so a silent run is a pass.
+The current suite exercises doubles and singles, pinned and automatic venues,
+two-way level bands, incompatible club choices, overlapping reservations,
+owner-only results, Elo updates and seven-day chat retention.
 
 ---
 

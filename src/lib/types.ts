@@ -104,9 +104,29 @@ export interface Match {
   /** Sets as `[[6,4],[6,3]]`. */
   score: number[][] | null;
   completed_at: string | null;
+  booked_by: string | null;
   club?: Pick<Club, "id" | "name" | "slug" | "city" | "timezone">;
   court?: Pick<Court, "id" | "name" | "indoor">;
   players?: MatchPlayer[];
+}
+
+export interface CommunityMessage {
+  id: string;
+  sender_id: string;
+  body: string;
+  created_at: string;
+  sender?: Pick<Profile, "id" | "username" | "full_name" | "avatar_url" | "city">;
+}
+
+export interface CalendarBooking {
+  id: string;
+  court_id: string;
+  starts_at: string;
+  ends_at: string;
+  status: MatchStatus;
+  origin: MatchOrigin;
+  booked_by: string | null;
+  player_names?: string[];
 }
 
 export interface Tournament {

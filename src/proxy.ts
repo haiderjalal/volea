@@ -1,7 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const PROTECTED = ["/play", "/matches", "/me", "/club"];
+const PROTECTED = ["/play", "/matches", "/community", "/me", "/club"];
+
+function isProtected(pathname: string): boolean {
+  return PROTECTED.some((route) => pathname === route || pathname.startsWith(`${route}/`));
+}
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -31,8 +35,9 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
+  const publicClubAuth = pathname === "/club/login" || pathname === "/club/signup";
 
-  if (!user && PROTECTED.some((p) => pathname.startsWith(p))) {
+  if (!user && !publicClubAuth && isProtected(pathname)) {
     const login = request.nextUrl.clone();
     login.pathname = "/login";
     login.searchParams.set("next", pathname);

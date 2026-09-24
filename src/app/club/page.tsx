@@ -3,6 +3,7 @@ import { Building2, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { PeakHours, RevenueTrend } from "@/features/club/Insights";
 import { NewTournament } from "@/features/club/NewTournament";
+import { CourtCalendar } from "@/features/courts/CourtCalendar";
 import { MatchCard } from "@/features/matches/MatchCard";
 import { ReportResult } from "@/features/matches/ReportResult";
 import { getClubMatchesAwaitingResult } from "@/features/matches/queries";
@@ -16,7 +17,7 @@ import {
   Stat,
 } from "@/components/ui";
 import { formatMoney, formatSlot } from "@/lib/format";
-import type { Club, ClubStats, Court, Tournament } from "@/lib/types";
+import type { CalendarBooking, Club, ClubStats, Court, Tournament } from "@/lib/types";
 
 export const metadata = {
   title: "Club dashboard",
@@ -24,6 +25,22 @@ export const metadata = {
 };
 
 const RANGES = [7, 30, 90] as const;
+
+type OwnerBooking = CalendarBooking & {
+  players?: { profile: { full_name: string } | null }[];
+};
+
+function dateInZone(timeZone: string): string {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? "00";
+  return `${get("year")}-${get("month")}-${get("day")}`;
+}
 
 export default async function ClubDashboard({
   searchParams,
@@ -68,7 +85,10 @@ export default async function ClubDashboard({
 
   const pending = await getClubMatchesAwaitingResult(supabase, club.id);
 
-  const [{ data: rawStats }, { data: courts }, { data: tournaments }] = await Promise.all([
+  const horizonDate = new Date();
+  horizonDate.setUTCDate(horizonDate.getUTCDate() + 8);
+  const horizon = horizonDate.toISOString();
+  const [{ data: rawStats }, { data: courts }, { data: tournaments }, { data: bookingRows }] = await Promise.all([
     supabase.rpc("club_stats", { p_club_id: club.id, p_days: days }),
     supabase
       .from("courts")
@@ -82,6 +102,18 @@ export default async function ClubDashboard({
       .eq("club_id", club.id)
       .order("starts_at", { ascending: false })
       .returns<Tournament[]>(),
+    supabase
+      .from("matches")
+      .select(`
+        id, court_id, starts_at, ends_at, status, origin, booked_by,
+        players:match_players(profile:profiles(full_name))
+      `)
+      .eq("club_id", club.id)
+      .neq("status", "cancelled")
+      .gte("ends_at", new Date().toISOString())
+      .lt("starts_at", horizon)
+      .order("starts_at")
+      .returns<OwnerBooking[]>(),
   ]);
 
   const stats = rawStats as ClubStats | null;
@@ -98,6 +130,12 @@ export default async function ClubDashboard({
     stats.unique_players > 0
       ? Math.round((stats.repeat_players / stats.unique_players) * 100)
       : 0;
+  const calendarBookings: CalendarBooking[] = (bookingRows ?? []).map((booking) => ({
+    ...booking,
+    player_names: booking.players
+      ?.map((player) => player.profile?.full_name)
+      .filter((name): name is string => Boolean(name)),
+  }));
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
@@ -134,6 +172,21 @@ export default async function ClubDashboard({
           </p>
         </section>
       ) : null}
+
+      <section>
+        <SectionHeading title="Booking calendar" />
+        <CourtCalendar
+          courts={courts ?? []}
+          bookings={calendarBookings}
+          opensAt={club.opens_at}
+          closesAt={club.closes_at}
+          timeZone={club.timezone}
+          startDate={dateInZone(club.timezone)}
+          clubSlug={club.slug}
+          signedIn
+          ownerView
+        />
+      </section>
 
       <nav aria-label="Date range" className="flex gap-2">
         {RANGES.map((r) => (

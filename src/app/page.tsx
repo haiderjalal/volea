@@ -71,6 +71,11 @@ export default async function HomePage() {
                 View tournaments
               </Button>
             </Link>
+            <Link href="/club/signup">
+              <Button size="lg" variant="outline">
+                List your club
+              </Button>
+            </Link>
           </div>
 
           <hr className="hairline rise mt-16" style={delay(360)} aria-hidden="true" />

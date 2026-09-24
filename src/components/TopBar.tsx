@@ -8,6 +8,7 @@ const LINKS = [
   { href: "/", label: "Courts" },
   { href: "/play", label: "Play" },
   { href: "/matches", label: "Matches" },
+  { href: "/community", label: "Community" },
   { href: "/tournaments", label: "Tournaments" },
   { href: "/leaderboard", label: "Rankings" },
 ];

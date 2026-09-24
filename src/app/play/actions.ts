@@ -52,7 +52,7 @@ export async function joinQueue(
   const min = spread >= 6 ? 1.0 : Math.max(1.0, level - spread);
   const max = spread >= 6 ? 7.0 : Math.min(7.0, level + spread);
 
-  const { data, error } = await supabase.rpc("join_queue", {
+  const queueParams = {
     p_play_date: play_date,
     p_window_start: `${window_start}:00`,
     p_window_end: `${window_end}:00`,
@@ -60,7 +60,15 @@ export async function joinQueue(
     p_club_id: club_id || null,
     p_min_level: min,
     p_max_level: max,
-  });
+  };
+  let { data, error } = await supabase.rpc("join_queue", queueParams);
+
+  // The overlap trigger may settle a simultaneous booking between the
+  // availability check and insert. Retrying the whole atomic RPC once lets the
+  // matcher choose the next free court without exposing the race to the user.
+  if (error?.code === "23P01") {
+    ({ data, error } = await supabase.rpc("join_queue", queueParams));
+  }
 
   if (error) {
     // Postgres raises our own friendly messages with these SQLSTATEs.
